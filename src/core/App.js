@@ -18,6 +18,7 @@ class App {
         // State
         this.isInitialized = false;
         this.currentView = 'loading';
+        this.isMapViewLocked = false;
     }
 
     /**
@@ -112,6 +113,18 @@ class App {
                 });
             });
         }, 1000);
+    }
+
+    lockMapView() {
+        this.isMapViewLocked = true;
+        Config.log('debug', 'Map view locked by user request');
+    }
+
+    unlockMapView() {
+        if (this.isMapViewLocked) {
+            Config.log('debug', 'Map view lock cleared');
+        }
+        this.isMapViewLocked = false;
     }
 
     /**
@@ -257,15 +270,17 @@ class App {
         this.screenManager.updateActiveScreens(screens);
 
         // Decision logic
-        const shouldSwitchToDashboard = screens.length > 0 && this.currentView === 'map';
+        const shouldSwitchToDashboard = screens.length > 0 && this.currentView === 'map' && !this.isMapViewLocked;
         console.log('â“ Should switch to dashboard?', shouldSwitchToDashboard);
         console.log('   - Has screens?', screens.length > 0);
         console.log('   - Is on map?', this.currentView === 'map');
+        console.log('   - Map locked?', this.isMapViewLocked);
 
         // Auto switch view based on screens
         if (shouldSwitchToDashboard) {
             // Have active screens, switch to dashboard
             console.log('âœ… SWITCHING TO DASHBOARD VIEW...');
+            this.unlockMapView();
             setTimeout(() => {
                 console.log('ðŸš€ Navigating to dashboard now!');
                 this.router.navigate('/dashboard', { screens });
@@ -292,6 +307,7 @@ class App {
                 this.router.navigate('/map');
                 break;
             case 'dashboard':
+                this.unlockMapView();
                 this.router.navigate('/dashboard', { 
                     screens: detail.screens || this.screenManager.getActiveScreens() 
                 });
@@ -348,15 +364,18 @@ class App {
         // Ưu tiên sử dụng Routes mới nếu đang trong detail view
         if (this.routes.getCurrentScreen()) {
             this.routes.back();
+            this.unlockMapView();
             // Luôn quay về dashboard với hệ thống 2 cấp mới
             this.currentView = 'dashboard';
         } else {
             // Fallback to old system
             if (detail.to === 'dashboard') {
+                this.unlockMapView();
                 this.router.navigate('/dashboard', {
                     screens: this.screenManager.getActiveScreens()
                 });
             } else if (detail.to === 'map') {
+                this.lockMapView();
                 this.router.navigate('/map');
             } else {
                 this.router.back();
@@ -430,6 +449,7 @@ class App {
      */
     showDashboardView(screens) {
         console.log('showDashboardView called with screens:', screens);
+        this.unlockMapView();
         
         // Don't redirect to map if M0 is with other screens
         // Only redirect if ONLY M0 exists and no other screens
@@ -470,6 +490,7 @@ class App {
     showDetailView(params = {}) {
         const { screen = null, view = 'defaultDetail' } = params;
         Config.log('info', 'Showing detail view:', params);
+        this.unlockMapView();
 
         this.hideLoading();
         this.mapFullscreen.hide();
@@ -676,6 +697,7 @@ class App {
         this.router?.clear();
 
         this.isInitialized = false;
+        this.isMapViewLocked = false;
         Config.log('info', 'Application destroyed');
     }
 }

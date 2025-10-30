@@ -271,6 +271,9 @@ class NavigationManager {
                         // M0 (screen 0) - navigate to map view
                         if (screenNumber === 0) {
                             Config.log('info', 'M0 selected - navigating to map view');
+                            if (window.app && typeof window.app.lockMapView === 'function') {
+                                window.app.lockMapView();
+                            }
                             window.app.router.navigate('/map');
                         } else {
                             // Other screens - open detail view
@@ -311,6 +314,9 @@ class NavigationManager {
                 const hasM0 = document.querySelector('.screen-tile[data-stt="0"]');
                 if (hasM0) {
                     Config.log('info', 'M0 active - navigating to map view on back');
+                    if (window.app && typeof window.app.lockMapView === 'function') {
+                        window.app.lockMapView();
+                    }
                     window.app.router.navigate('/map');
                 } else {
                     // Normal back navigation
@@ -321,13 +327,17 @@ class NavigationManager {
                 break;
                 
             case 'map':
-                // Exit app hoặc không làm gì
+                // Trên Tizen có thể thoát ứng dụng, còn lại quay về dashboard
                 if (Config.isTizen()) {
                     try {
                         window.tizen.application.getCurrentApplication().exit();
                     } catch (e) {
                         Config.log('error', 'Failed to exit app:', e);
                     }
+                } else {
+                    window.dispatchEvent(new CustomEvent('navigateBack', {
+                        detail: { from: 'map', to: 'dashboard' }
+                    }));
                 }
                 break;
         }

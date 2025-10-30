@@ -413,6 +413,9 @@ class DashboardGrid {
         if (screen.STT === 0) {
             Config.log('info', 'M0 clicked - navigating to map view');
             if (window.app && window.app.router) {
+                if (typeof window.app.lockMapView === 'function') {
+                    window.app.lockMapView();
+                }
                 window.app.router.navigate('/map');
             }
         } else {
