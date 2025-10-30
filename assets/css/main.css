@@ -82,8 +82,16 @@ body {
 }
 
 .view-container.active {
-    display: block;
-    opacity: 1;
+    display: block !important;
+    opacity: 1 !important;
+}
+
+/* Đảm bảo các container hiển thị đúng khi active */
+#dashboard-container.active,
+#detail-container.active,
+#map-fullscreen-container.active {
+    display: block !important;
+    opacity: 1 !important;
 }
 
 /* Loading Screen */
@@ -322,8 +330,27 @@ body {
 .detail-content {
     flex: 1;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
+}
+
+.detail-custom-view {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.detail-iframe {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    border-radius: var(--border-radius);
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.15);
 }
 
 .widget-grid {
@@ -385,3 +412,13 @@ body {
 .p-2 { padding: var(--spacing-sm); }
 .p-3 { padding: var(--spacing-md); }
 .p-4 { padding: var(--spacing-lg); }
+
+/* Iframe container for Routes system */
+.detail-iframe-container,
+#iframe-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+

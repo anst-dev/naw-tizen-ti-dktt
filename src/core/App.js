@@ -1,4 +1,4 @@
-/**
+﻿/**
  * App.js - Main application entry point
  */
 
@@ -9,6 +9,7 @@ class App {
         this.screenManager = null;
         this.navigationManager = null;
         this.router = null;
+        this.routes = null; // New simplified routing system
 
         // Components
         this.mapFullscreen = null;
@@ -24,7 +25,7 @@ class App {
      */
     async init() {
         try {
-            Config.log('info', '🚀 Initializing Tizen Control Room Application');
+            Config.log('info', 'ðŸš€ Initializing Tizen Control Room Application');
 
             // Show loading
             this.showLoading();
@@ -45,11 +46,11 @@ class App {
             await this.start();
 
             this.isInitialized = true;
-            Config.log('info', '✅ Application initialized successfully');
+            Config.log('info', 'âœ… Application initialized successfully');
 
         } catch (error) {
-            Config.log('error', '❌ Failed to initialize application:', error);
-            this.showError('Không thể khởi động ứng dụng. Vui lòng thử lại.');
+            Config.log('error', 'âŒ Failed to initialize application:', error);
+            this.showError('KhÃ´ng thá»ƒ khá»Ÿi Ä‘á»™ng á»©ng dá»¥ng. Vui lÃ²ng thá»­ láº¡i.');
         }
     }
 
@@ -70,8 +71,47 @@ class App {
         this.navigationManager = new NavigationManager();
         this.navigationManager.init();
 
-        // Router
+        // Router (keep for compatibility)
         this.router = new Router();
+        
+        // New simplified Routes system
+        this.routes = new Routes();
+        this.routes.init();
+        
+        // Setup protection against unwanted content injection
+        this.setupWidgetProtection();
+    }
+
+    /**
+     * Setup protection against unwanted content injection
+     */
+    setupWidgetProtection() {
+        // Monitor for any changes to widget content
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(mutation => {
+                if (mutation.target.classList && mutation.target.classList.contains('widget-content')) {
+                    // If content contains suspicious text, clear it
+                    const content = mutation.target.textContent || '';
+                    if (content.includes('Opus') || content.includes('48gh') || content.includes('Claude')) {
+                        mutation.target.innerHTML = '';
+                        mutation.target.textContent = '';
+                        Config.log('warn', 'Cleared unwanted widget content:', content);
+                    }
+                }
+            });
+        });
+
+        // Start observing all widget contents
+        setTimeout(() => {
+            const widgets = document.querySelectorAll('.widget-content');
+            widgets.forEach(widget => {
+                observer.observe(widget, { 
+                    childList: true, 
+                    characterData: true,
+                    subtree: true 
+                });
+            });
+        }, 1000);
     }
 
     /**
@@ -105,7 +145,7 @@ class App {
 
         // Detail route
         this.router.register('/detail', (params) => {
-            this.showDetailView(params.screen);
+            this.showDetailView(params || {});
         });
 
         // Set route change hooks
@@ -187,16 +227,16 @@ class App {
      */
     handleAPIUpdate(screens) {
         Config.log('info', `API Update: ${screens.length} active screens`);
-        console.log('🔄 === API UPDATE RECEIVED ===');
-        console.log('📊 Screens count:', screens.length);
-        console.log('📍 Current view:', this.currentView);
-        console.log('🎯 Screens data:', screens);
+        console.log('ðŸ”„ === API UPDATE RECEIVED ===');
+        console.log('ðŸ“Š Screens count:', screens.length);
+        console.log('ðŸ“ Current view:', this.currentView);
+        console.log('ðŸŽ¯ Screens data:', screens);
 
         // Add M0 (map screen) to the beginning if there are active screens
         if (screens.length > 0) {
             const m0Screen = {
                 STT: 0,
-                TenManHinh: "Màn hình Bản đồ",
+                TenManHinh: "MÃ n hÃ¬nh Báº£n Ä‘á»“",
                 isActive: true,
                 MaManHinh: "M0",
                 LoaiManHinh: "map",
@@ -218,16 +258,16 @@ class App {
 
         // Decision logic
         const shouldSwitchToDashboard = screens.length > 0 && this.currentView === 'map';
-        console.log('❓ Should switch to dashboard?', shouldSwitchToDashboard);
+        console.log('â“ Should switch to dashboard?', shouldSwitchToDashboard);
         console.log('   - Has screens?', screens.length > 0);
         console.log('   - Is on map?', this.currentView === 'map');
 
         // Auto switch view based on screens
         if (shouldSwitchToDashboard) {
             // Have active screens, switch to dashboard
-            console.log('✅ SWITCHING TO DASHBOARD VIEW...');
+            console.log('âœ… SWITCHING TO DASHBOARD VIEW...');
             setTimeout(() => {
-                console.log('🚀 Navigating to dashboard now!');
+                console.log('ðŸš€ Navigating to dashboard now!');
                 this.router.navigate('/dashboard', { screens });
             }, Config.LAYOUT.TRANSITION_DURATION);
         } else if (screens.length === 0 && this.currentView === 'dashboard') {
@@ -265,47 +305,75 @@ class App {
     }
 
     /**
-     * Handle open detail
+     * Handle open detail - Simplified version using Routes
      */
     handleOpenDetail(detail) {
         Config.log('info', 'Opening screen detail:', detail);
 
-        if (detail.screen) {
-            this.router.navigate('/detail', { screen: detail.screen });
-        } else if (detail.stt) {
-            // Find screen by STT
-            const screen = this.screenManager.getActiveScreens()
-                .find(s => s.STT === detail.stt);
-            if (screen) {
-                this.router.navigate('/detail', { screen });
+        const providedScreen = detail?.screen;
+        const sttValue = Number(detail?.stt ?? providedScreen?.STT);
+
+        // Kiểm tra xem màn hình có tồn tại trong Routes không
+        if (this.routes.hasScreen(sttValue)) {
+            // Sử dụng hệ thống Routes mới đơn giản
+            this.routes.navigate(sttValue, { screen: providedScreen });
+            this.currentView = 'detail';
+        } else {
+            // Fallback to old system for screens not in Routes
+            let targetScreen = providedScreen;
+            if (!targetScreen && !Number.isNaN(sttValue)) {
+                targetScreen = this.screenManager.getActiveScreens()
+                    .find(s => Number(s.STT) === sttValue);
+            }
+
+            if (!targetScreen) {
+                Config.log('warn', 'No screen data found for detail view');
+                return;
+            }
+
+            const isChiTietDiemChay = Number(targetScreen.STT) === 5;
+            this.router.navigate('/detail', {
+                screen: targetScreen,
+                view: isChiTietDiemChay ? 'chiTietDiemChay' : 'defaultDetail'
+            });
+        }
+    }
+
+    /**
+     * Handle navigate back - Simplified version
+     */
+    handleNavigateBack(detail) {
+        Config.log('info', 'Navigate back:', detail);
+
+        // Ưu tiên sử dụng Routes mới nếu đang trong detail view
+        if (this.routes.getCurrentScreen()) {
+            this.routes.back();
+            // Luôn quay về dashboard với hệ thống 2 cấp mới
+            this.currentView = 'dashboard';
+        } else {
+            // Fallback to old system
+            if (detail.to === 'dashboard') {
+                this.router.navigate('/dashboard', {
+                    screens: this.screenManager.getActiveScreens()
+                });
+            } else if (detail.to === 'map') {
+                this.router.navigate('/map');
+            } else {
+                this.router.back();
             }
         }
     }
 
     /**
-     * Handle navigate back
-     */
-    handleNavigateBack(detail) {
-        Config.log('info', 'Navigate back:', detail);
-
-        if (detail.to === 'dashboard') {
-            this.router.navigate('/dashboard', {
-                screens: this.screenManager.getActiveScreens()
-            });
-        } else if (detail.to === 'map') {
-            this.router.navigate('/map');
-        } else {
-            this.router.back();
-        }
-    }
-
-    /**
-     * Handle Tizen hardware keys
+     * Handle Tizen hardware keys - Simplified
      */
     handleTizenKey(event) {
         switch (event.keyName) {
             case 'back':
-                if (this.currentView === 'detail') {
+                // Kiểm tra nếu đang dùng Routes system
+                if (this.routes.getCurrentScreen()) {
+                    this.routes.back();
+                } else if (this.currentView === 'detail') {
                     this.handleNavigateBack({ to: 'dashboard' });
                 } else if (this.currentView === 'dashboard') {
                     this.handleNavigateBack({ to: 'map' });
@@ -337,11 +405,16 @@ class App {
             dashboardContainer.style.display = 'none';
             dashboardContainer.classList.remove('active');
         }
+
+        // Hide detail container
+        this.hideDetailView(true);
         
         // Show map container
         const mapContainer = document.getElementById('map-fullscreen-container');
         if (mapContainer) {
             mapContainer.style.display = 'block';
+            // Force reflow for smooth transition
+            mapContainer.offsetHeight;
             mapContainer.classList.add('active');
         }
         
@@ -349,7 +422,7 @@ class App {
         this.mapFullscreen.show();
         this.navigationManager.currentView = 'map';
         this.currentView = 'map';
-        Config.log('info', '📍 Showing map view');
+        Config.log('info', 'ðŸ“ Showing map view');
     }
 
     /**
@@ -369,11 +442,14 @@ class App {
         
         this.hideLoading();
         this.mapFullscreen.hide();
+        this.hideDetailView(true);
         
         // Ensure dashboard container is visible
         const dashboardContainer = document.getElementById('dashboard-container');
         if (dashboardContainer) {
             dashboardContainer.style.display = 'block';
+            // Force reflow for smooth transition
+            dashboardContainer.offsetHeight;
             dashboardContainer.classList.add('active');
         }
         
@@ -381,18 +457,170 @@ class App {
         this.dashboardGrid.render(screens || []);
         this.navigationManager.currentView = 'dashboard';
         this.currentView = 'dashboard';
-        Config.log('info', '📊 Showing dashboard view');
+        Config.log('info', 'ðŸ“Š Showing dashboard view');
         console.log('Dashboard view should be visible now');
     }
 
     /**
      * Show detail view
+     * @param {Object} params
+     * @param {Object} params.screen
+     * @param {string} params.view
      */
-    showDetailView(screen) {
-        // TODO: Implement detail view
-        Config.log('info', '📋 Showing detail view for screen:', screen);
+    showDetailView(params = {}) {
+        const { screen = null, view = 'defaultDetail' } = params;
+        Config.log('info', 'Showing detail view:', params);
+
+        this.hideLoading();
+        this.mapFullscreen.hide();
+        this.dashboardGrid.hide();
+
+        const detailContainer = document.getElementById('detail-container');
+        if (!detailContainer) {
+            Config.log('error', 'Detail container not found');
+            return;
+        }
+
+        // Clear all widget contents first
+        const widgets = detailContainer.querySelectorAll('.widget-content');
+        widgets.forEach(widget => {
+            widget.innerHTML = '';
+            widget.textContent = '';
+        });
+
+        detailContainer.style.display = 'block';
+        // Force reflow for smooth transition
+        detailContainer.offsetHeight;
+        detailContainer.classList.add('active');
+
+        const titleElement = detailContainer.querySelector('#detail-title');
+        if (titleElement) {
+            titleElement.textContent = screen?.TenManHinh || 'Chi tiet man hinh';
+        }
+
+        if (view === 'chiTietDiemChay' || Number(screen?.STT) === 5) {
+            this.renderChiTietDiemChayView(detailContainer);
+        } else {
+            this.renderDefaultDetailView(detailContainer, screen);
+        }
+
         this.navigationManager.currentView = 'detail';
         this.currentView = 'detail';
+    }
+
+    /**
+     * Hide detail view
+     * @param {boolean} immediate
+     */
+    hideDetailView(immediate = false) {
+        const detailContainer = document.getElementById('detail-container');
+        if (!detailContainer) {
+            return;
+        }
+
+        const detailContent = detailContainer.querySelector('.detail-content');
+        if (detailContent) {
+            const customView = detailContent.querySelector('#chi-tiet-diem-chay-view');
+            if (customView) {
+                customView.style.display = 'none';
+            }
+
+            const widgetGrid = detailContent.querySelector('.widget-grid');
+            if (widgetGrid) {
+                // Clear all widget contents when hiding
+                const widgets = widgetGrid.querySelectorAll('.widget-content');
+                widgets.forEach(widget => {
+                    widget.innerHTML = '';
+                    widget.textContent = '';
+                });
+                widgetGrid.style.display = 'grid';
+            }
+        }
+
+        detailContainer.classList.remove('active');
+        if (immediate) {
+            detailContainer.style.display = 'none';
+            return;
+        }
+
+        const transition = Config?.LAYOUT?.TRANSITION_DURATION ?? 0;
+        setTimeout(() => {
+            detailContainer.style.display = 'none';
+        }, transition);
+    }
+
+    /**
+     * Render ChiTietDiemChay view
+     * @param {HTMLElement} detailContainer
+     */
+    renderChiTietDiemChayView(detailContainer) {
+        const detailContent = detailContainer.querySelector('.detail-content');
+        if (!detailContent) {
+            return;
+        }
+
+        const widgetGrid = detailContent.querySelector('.widget-grid');
+        if (widgetGrid) {
+            // Clear all widget contents before hiding
+            const widgets = widgetGrid.querySelectorAll('.widget-content');
+            widgets.forEach(widget => {
+                widget.innerHTML = '';
+                widget.textContent = '';
+            });
+            widgetGrid.style.display = 'none';
+        }
+
+        let customView = detailContent.querySelector('#chi-tiet-diem-chay-view');
+        if (!customView) {
+            customView = document.createElement('div');
+            customView.id = 'chi-tiet-diem-chay-view';
+            customView.className = 'detail-custom-view';
+            detailContent.appendChild(customView);
+        }
+
+        customView.style.display = 'block';
+
+        let iframe = customView.querySelector('iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.className = 'detail-iframe';
+            iframe.title = 'Chi tiet diem chay';
+            iframe.setAttribute('frameborder', '0');
+            iframe.setAttribute('allowfullscreen', 'true');
+            customView.appendChild(iframe);
+        }
+
+        iframe.src = 'ChiTietDiemChay.html';
+    }
+
+    /**
+     * Render default detail view
+     * @param {HTMLElement} detailContainer
+     * @param {Object} screen
+     */
+    renderDefaultDetailView(detailContainer, screen) {
+        const detailContent = detailContainer.querySelector('.detail-content');
+        if (!detailContent) {
+            return;
+        }
+
+        const widgetGrid = detailContent.querySelector('.widget-grid');
+        if (widgetGrid) {
+            // Clear all widget contents before showing
+            const widgets = widgetGrid.querySelectorAll('.widget-content');
+            widgets.forEach(widget => {
+                widget.innerHTML = '';
+                widget.textContent = '';
+            });
+            widgetGrid.style.display = 'grid';
+        }
+
+        const customView = detailContent.querySelector('#chi-tiet-diem-chay-view');
+        if (customView) {
+            customView.style.display = 'none';
+        }
+
+        Config.log('debug', 'Rendering default detail view for screen:', screen);
     }
 
     /**
@@ -463,9 +691,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Export cho các module khác sử dụng
+// Export cho cÃ¡c module khÃ¡c sá»­ dá»¥ng
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = App;
 } else {
     window.App = App;
 }
+
