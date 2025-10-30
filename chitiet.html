@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tizen Powerpoint UI</title>
+    
+    <!-- 1. Tizen Web API (Cần thiết cho ứng dụng Tizen thực tế) -->
+    <script type='text/javascript' src='$WEBAPIS/webapis/webapis.js'></script>
+    
+    <!-- 2. Bootstrap 5.3 CSS (Chỉ dùng cho hệ thống lưới và reset) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- 3. Google Font (Inter - Rõ ràng, dễ đọc) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* * 4. YÊU CẦU CỐT LÕI: Thiết lập toàn màn hình và Box Sizing
+         */
+        :root {
+            /* * NÂNG CẤP UI: Áp dụng bảng màu SÁNG MỚI
+             */
+            --pro-light-bg: #F5F3ED;      /* Nền kem (thay cho nền tối) */
+            --pro-light-card: #FFFFFF;    /* Nền thẻ trắng */
+            --pro-light-border: #E0E0E0;   /* Viền thẻ xám nhạt */
+            
+            --pro-text-dark: #212529;     /* Văn bản chính màu tối */
+            --pro-text-secondary: #6c757d; /* Văn bản phụ xám */
+            
+            /* Màu từ palette mới */
+            --pro-accent-blue: #6A9AA6; /* Xanh blue cho điểm nhấn */
+            --pro-accent-green: #B3BFB0; /* Xanh sage cho văn bản phụ (thay thế pro-text-dim) */
+        }
+
+        * {
+            /* Đảm bảo padding/border không làm vỡ bố cục 100vh */
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Ngăn cuộn toàn bộ trang */
+            
+            /* 5. YÊU CẦU THEME: Giao diện SÁNG và Font chữ */
+            background-color: var(--pro-light-bg);
+            color: var(--pro-text-dark);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* 6. YÊU CẦU BỐ CỤC: Container 100% chiều cao */
+        .main-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            padding: 1.5rem; /* Thêm một chút không gian ở viền TV */
+        }
+
+        /* * 7. YÊU CẦU CỘT TRÁI (SIDEBAR - col-3)
+         */
+        .sidebar-col {
+            flex: 0 0 25%; /* Tương đương col-3 */
+            max-width: 25%;
+            height: 100%; /* Đảm bảo cột chiếm 100% chiều cao */
+            display: flex;
+            flex-direction: column;
+            padding-right: 1.5rem; /* Khoảng cách với cột phải */
+        }
+        
+        .sidebar-col h2 {
+            font-size: 2.25rem; /* Font to, rõ */
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            flex-shrink: 0; /* Không co lại */
+        }
+
+        /* * 8. YÊU CẦU CUỘN NỘI BỘ (Sidebar List)
+         */
+        #sidebar-nav {
+            flex-grow: 1;
+            overflow-y: auto;
+            /* Tùy chỉnh thanh cuộn cho đẹp hơn trên TV */
+            scrollbar-color: var(--pro-accent-blue) var(--pro-light-border); /* NÂNG CẤP UI */
+        }
+
+        /* 9. YÊU CẦU GIAO DIỆN "BOX" (Mục Sidebar) */
+        .sidebar-item {
+            display: block;
+            width: 100%;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+            background-color: var(--pro-light-card);
+            border-radius: 0.85rem; /* NÂNG CẤP UI: Bo góc mềm mại hơn */
+            font-size: 1.75rem; 
+            font-weight: 500;
+            color: var(--pro-text-dark);
+            text-decoration: none;
+            /* NÂNG CẤP UI: Thêm border-color vào transition */
+            transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            /* NÂNG CẤP UI: Thêm viền mờ để tăng chiều sâu */
+            border: 3px solid var(--pro-light-border);
+        }
+        
+        /* * 10. YÊU CẦU TƯƠNG TÁC (Trạng thái Active & Focus)
+         */
+
+        /* Trạng thái "Đã chọn" (Active) */
+        .sidebar-item.active {
+            background-color: var(--pro-accent-blue); /* NÂNG CẤP UI: Dùng màu mới */
+            color: #ffffff;
+            font-weight: 600; /* NÂNG CẤP UI: Dùng SemiBold */
+            border-color: var(--pro-accent-blue); /* Đồng bộ màu viền */
+        }
+
+        /* * NÂNG CẤP UX: Trạng thái Focus chuyên nghiệp
+         * Thay vì đổi nền, chúng ta dùng viền và bóng mờ
+         */
+        .sidebar-item:focus, .content-box:focus {
+            outline: none; /* TẮT outline mặc định của trình duyệt */
+            background-color: var(--pro-light-card); /* Giữ nền thẻ trắng */
+            color: var(--pro-text-dark);
+            border-color: var(--pro-accent-blue); /* Viền màu xanh nổi bật */
+            box-shadow: 0 0 0 4px rgba(106, 154, 166, 0.5); /* Vòng sáng xanh mờ */
+        }
+        
+        /* * NÂNG CẤP UX: Trạng thái đặc biệt khi Focus vào mục đang Active
+         */
+        .sidebar-item.active:focus {
+            background-color: var(--pro-accent-blue); /* Giữ màu nền active */
+            color: #ffffff; /* Giữ chữ trắng */
+            border-color: var(--pro-text-dark); /* Dùng viền đen để siêu nổi bật */
+            box-shadow: 0 0 0 4px rgba(33, 37, 41, 0.4); /* Vòng sáng đen/mờ */
+        }
+
+
+        /* * 11. YÊU CẦU CỘT PHẢI (MAIN CONTENT - col-9)
+         */
+        .main-content-col {
+            flex: 0 0 75%; /* Tương đương col-9 */
+            max-width: 75%;
+            height: 100%; /* Đảm bảo cột chiếm 100% chiều cao */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* * 12. YÊU CẦU LƯỚI 2x2 (Hoàn hảo)
+         */
+        .grid-container {
+            flex-grow: 1; /* Cho phép lưới này chiếm toàn bộ không gian */
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 cột bằng nhau */
+            grid-template-rows: 1fr 1fr; /* 2 hàng bằng nhau */
+            gap: 1.5rem; /* Khoảng cách giữa các ô */
+        }
+
+        /* 13. YÊU CẦU GIAO DIỆN "BOX" (Ô nội dung) */
+        .content-box {
+            background-color: var(--pro-light-card);
+            border-radius: 0.85rem; /* NÂNG CẤP UI: Bo góc mềm mại hơn */
+            padding: 2rem;
+            transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            border: 3px solid var(--pro-light-border); /* NÂNG CẤP UI: Viền sáng */
+            
+            /* Dùng flex để căn nội dung bên trong */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .content-box h3 {
+            font-size: 2rem;
+            font-weight: 600; /* NÂNG CẤP UI: Dùng SemiBold cho nhẹ nhàng */
+            color: var(--pro-text-dark);
+        }
+        
+        .content-box p {
+            font-size: 1.75rem;
+            color: var(--pro-accent-green); /* NÂNG CẤP UI: Dùng màu xanh sage */
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 
+      Sử dụng Bootstrap grid cơ bản cho layout 2 cột
+      nhưng tùy chỉnh lại bằng flexbox (trong CSS) để đạt 100vh
+    -->
+    <div class="main-container">
+
+        <!-- CỘT TRÁI (SIDEBAR) -->
+        <div class="sidebar-col">
+            <!-- Danh sách cuộn nội bộ -->
+            <div id="sidebar-nav" role="list">
+                <!-- 11 mục, tất cả đều có tabindex="0" để focus được -->
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="0">Màn hình 1</a>
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="1">Màn hình 2</a>
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="2">Màn hình 3</a>
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="3">Màn hình 4</a>
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="4">Màn hình 5</a>
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="5">Màn hình 6</a>
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="6">Màn hình 7</a>
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="7">Màn hình 8</a>
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="8">Màn hình 9</a>
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="9">Màn hình 10</a>
+                <a href="#" class="sidebar-item" role="listitem" tabindex="0" data-index="10">Màn hình 11</a>
+            </div>
+        </div>
+
+        <!-- CỘT PHẢI (MAIN CONTENT) -->
+        <div class="main-content-col">
+            
+            <!-- Lưới 2x2 co giãn 100% -->
+            <div class="grid-container">
+                <!-- 4 ô nội dung, tất cả đều có tabindex="0" -->
+                <div id="box-1" class="content-box" tabindex="0" data-grid-index="0">
+                    <h3 id="box-1-title">Nội dung 1</h3>
+                    <p id="box-1-content">Chi tiết cho nội dung 1.</p>
+                </div>
+                
+                <div id="box-2" class="content-box" tabindex="0" data-grid-index="1">
+                    <h3 id="box-2-title">Nội dung 2</h3>
+                    <p id="box-2-content">Chi tiết cho nội dung 2.</p>
+                </div>
+                
+                <div id="box-3" class="content-box" tabindex="0" data-grid-index="2">
+                    <h3 id="box-3-title">Nội dung 3</h3>
+                    <p id="box-3-content">Chi tiết cho nội dung 3.</p>
+                </div>
+                
+                <div id="box-4" class="content-box" tabindex="0" data-grid-index="3">
+                    <h3 id="box-4-title">Nội dung 4</h3>
+                    <p id="box-4-content">Chi tiết cho nội dung 4.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // 14. LOGIC ĐIỀU KHIỂN (JAVASCRIPT)
+        // Phần logic điều khiển không thay đổi vì đã hoạt động đúng yêu cầu UX
+        // Chỉ thay đổi CSS để nâng cấp UI
+
+        // Dữ liệu giả lập cho 11 màn hình
+        const slideData = [
+            // Màn hình 1
+            {
+                box1: { title: "Doanh thu Q1", content: "120 tỷ VNĐ" },
+                box2: { title: "Lợi nhuận Q1", content: "15 tỷ VNĐ (12.5%)" },
+                box3: { title: "Người dùng mới", content: "15,200" },
+                box4: { title: "Tỷ lệ duy trì", content: "85%" },
+            },
+            // Màn hình 2
+            {
+                box1: { title: "Sản lượng SX", content: "1,200,000 đơn vị" },
+                box2: { title: "Tồn kho", content: "50,000 đơn vị" },
+                box3: { title: "SKU bán chạy", content: "Tizen TV 100-inch" },
+                box4: { title: "Dự báo Q2", content: "Tăng 15%" },
+            },
+            // ... (Thêm dữ liệu cho các màn hình khác)
+            // Dùng lặp lại cho demo
+            { box1: { title: "Mục 3-1", content: "Data A" }, box2: { title: "Mục 3-2", content: "Data B" }, box3: { title: "Mục 3-3", content: "Data C" }, box4: { title: "Mục 3-4", content: "Data D" } },
+            { box1: { title: "Mục 4-1", content: "Data A" }, box2: { title: "Mục 4-2", content: "Data B" }, box3: { title: "Mục 4-3", content: "Data C" }, box4: { title: "Mục 4-4", content: "Data D" } },
+            { box1: { title: "Mục 5-1", content: "Data A" }, box2: { title: "Mục 5-2", content: "Data B" }, box3: { title: "Mục 5-3", content: "Data C" }, box4: { title: "Mục 5-4", content: "Data D" } },
+            { box1: { title: "Mục 6-1", content: "Data A" }, box2: { title: "Mục 6-2", content: "Data B" }, box3: { title: "Mục 6-3", content: "Data C" }, box4: { title: "Mục 6-4", content: "Data D" } },
+            { box1: { title: "Mục 7-1", content: "Data A" }, box2: { title: "Mục 7-2", content: "Data B" }, box3: { title: "Mục 7-3", content: "Data C" }, box4: { title: "Mục 7-4", content: "Data D" } },
+            { box1: { title: "Mục 8-1", content: "Data A" }, box2: { title: "Mục 8-2", content: "Data B" }, box3: { title: "Mục 8-3", content: "Data C" }, box4: { title: "Mục 8-4", content: "Data D" } },
+            { box1: { title: "Mục 9-1", content: "Data A" }, box2: { title: "Mục 9-2", content: "Data B" }, box3: { title: "Mục 9-3", content: "Data C" }, box4: { title: "Mục 9-4", content: "Data D" } },
+            { box1: { title: "Mục 10-1", content: "Data A" }, box2: { title: "Mục 10-2", content: "Data B" }, box3: { title: "Mục 10-3", content: "Data C" }, box4: { title: "Mục 10-4", content: "Data D" } },
+            { box1: { title: "Mục 11-1", content: "Data A" }, box2: { title: "Mục 11-2", content: "Data B" }, box3: { title: "Mục 11-3", content: "Data C" }, box4: { title: "Mục 11-4", content: "Data D" } },
+        ];
+        
+        // DOM Elements
+        const sidebarItems = document.querySelectorAll('.sidebar-item');
+        const contentBoxes = document.querySelectorAll('.content-box');
+        
+        // Cache DOM cho nội dung
+        const boxTitles = [
+            document.getElementById('box-1-title'),
+            document.getElementById('box-2-title'),
+            document.getElementById('box-3-title'),
+            document.getElementById('box-4-title'),
+        ];
+        const boxContents = [
+            document.getElementById('box-1-content'),
+            document.getElementById('box-2-content'),
+            document.getElementById('box-3-content'),
+            document.getElementById('box-4-content'),
+        ];
+        
+        // State
+        let currentSidebarIndex = 0;
+        let lastFocusedSidebarItem = sidebarItems[0]; // Lưu lại mục sidebar cuối cùng
+
+        // --- Hàm Helper ---
+
+        /**
+         * Hàm cập nhật nội dung 4 ô bên phải
+         * @param {number} index - Chỉ số của mục sidebar (0-10)
+         */
+        function loadContent(index) {
+            const data = slideData[index];
+            if (!data) return;
+
+            boxTitles[0].textContent = data.box1.title;
+            boxContents[0].textContent = data.box1.content;
+
+            boxTitles[1].textContent = data.box2.title;
+            boxContents[1].textContent = data.box2.content;
+            
+            boxTitles[2].textContent = data.box3.title;
+            boxContents[2].textContent = data.box3.content;
+            
+            boxTitles[3].textContent = data.box4.title;
+            boxContents[3].textContent = data.box4.content;
+        }
+
+        /**
+         * Hàm đặt trạng thái 'active' cho mục sidebar
+         * @param {number} index - Chỉ số của mục sidebar
+         */
+        function setActiveSidebarItem(index) {
+            // Xóa active ở tất cả các mục
+            sidebarItems.forEach(item => item.classList.remove('active'));
+            
+            // Thêm active cho mục được chọn
+            const newItem = sidebarItems[index];
+            if (newItem) {
+                newItem.classList.add('active');
+                lastFocusedSidebarItem = newItem; // Cập nhật mục đã chọn cuối cùng
+                currentSidebarIndex = index;
+            }
+        }
+
+        // --- Xử lý sự kiện ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Khởi tạo: Đặt active và tải nội dung cho mục đầu tiên
+            setActiveSidebarItem(0);
+            loadContent(0);
+            
+            // Tự động focus vào mục đầu tiên khi tải ứng dụng
+            sidebarItems[0].focus();
+        });
+
+        // Bộ lắng nghe phím bấm (trái tim của ứng dụng Tizen)
+        document.addEventListener('keydown', (e) => {
+            const focusedElement = document.activeElement;
+            if (!focusedElement) return;
+
+            // Kiểm tra xem focus đang ở Sidebar hay Main Content
+            const isSidebarFocus = focusedElement.classList.contains('sidebar-item');
+            const isContentFocus = focusedElement.classList.contains('content-box');
+
+            if (isSidebarFocus) {
+                // --- Xử lý khi focus ở SIDEBAR ---
+                let index = parseInt(focusedElement.getAttribute('data-index'));
+
+                switch (e.key) {
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        if (index > 0) {
+                            sidebarItems[index - 1].focus();
+                        }
+                        break;
+                    
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        if (index < sidebarItems.length - 1) {
+                            sidebarItems[index + 1].focus();
+                        }
+                        break;
+                    
+                    case 'ArrowRight':
+                        // Yêu cầu: Nhảy sang ô nội dung đầu tiên
+                        e.preventDefault();
+                        contentBoxes[0].focus();
+                        break;
+                    
+                    case 'Enter': // Hoặc 'OK' trên điều khiển Tizen
+                        e.preventDefault();
+                        // Yêu cầu: Cập nhật nội dung động
+                        setActiveSidebarItem(index);
+                        loadContent(index);
+                        break;
+                }
+                
+                // Yêu cầu: Tự cuộn để giữ item trong tầm nhìn
+                // Chúng ta làm điều này sau khi focus đã di chuyển
+                document.activeElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest' // Chỉ cuộn nếu item bị che
+                });
+
+            } else if (isContentFocus) {
+                // --- Xử lý khi focus ở MAIN CONTENT (Lưới 2x2) ---
+                let index = parseInt(focusedElement.getAttribute('data-grid-index')); // 0, 1, 2, 3
+
+                switch (e.key) {
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        if (index === 2 || index === 3) { // Từ hàng dưới lên hàng trên
+                            contentBoxes[index - 2].focus();
+                        }
+                        break;
+                    
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        if (index === 0 || index === 1) { // Từ hàng trên xuống hàng dưới
+                            contentBoxes[index + 2].focus();
+                        }
+                        break;
+                    
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        if (index === 0 || index === 2) {
+                            // Yêu cầu: Nhảy về mục đã chọn cuối cùng
+                            lastFocusedSidebarItem.focus();
+                        } else if (index === 1 || index === 3) { // Từ cột phải sang cột trái
+                            contentBoxes[index - 1].focus();
+                        }
+                        break;
+
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        if (index === 0 || index === 2) { // Từ cột trái sang cột phải
+                            contentBoxes[index + 1].focus();
+                        }
+                        break;
+                }
+            }
+        });
+        
+        // Thêm hỗ trợ Click chuột (tùy chọn nhưng tốt cho dev)
+        sidebarItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const index = parseInt(item.getAttribute('data-index'));
+                setActiveSidebarItem(index);
+                loadContent(index);
+                item.focus(); // Giữ focus sau khi click
+            });
+        });
+
+    </script>
+</body>
+</html>
+
+
+

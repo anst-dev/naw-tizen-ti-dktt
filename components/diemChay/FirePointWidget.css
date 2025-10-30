@@ -1,0 +1,72 @@
+/* Scoped styles for FirePointWidget */
+.fire-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.4rem;
+    margin-top: 20px;
+}
+
+.fire-stats-table th,
+.fire-stats-table td {
+    border: 1px solid #475569;
+    padding: 12px;
+    text-align: left;
+}
+
+.fire-stats-table th {
+    background-color: #334155;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.fire-stats-table td {
+    color: #e2e8f0;
+}
+
+.fire-stats-table tbody tr:hover {
+    background-color: rgba(56, 189, 248, 0.1);
+}
+
+.fire-stats-table td:first-child {
+    text-align: center;
+    width: 60px;
+}
+
+.fire-stats-table td:last-child {
+    text-align: right;
+    font-weight: 500;
+}
+
+/* Fullscreen mode styles */
+.screen.fullscreen .fire-stats-table {
+    font-size: 2rem;
+}
+
+.screen.fullscreen .fire-stats-table th,
+.screen.fullscreen .fire-stats-table td {
+    padding: 20px;
+}
+
+/* Loading and error states */
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.error {
+    text-align: center;
+    padding: 20px;
+    color: #ff4757;
+}
+
+/* FirePointWidget container */
+.fire-point-widget {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
