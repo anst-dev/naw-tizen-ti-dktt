@@ -115,9 +115,10 @@ class DashboardGrid {
             columns = 4;
             rows = 3;
             layoutMode = 'grid-4-4-3';
-        } else if (screenCount >= 10 && screenCount <= 12) {
+        } else if (screenCount === 12) {
             columns = 4;
             rows = 3;
+            layoutMode = 'grid-4-3';
         } else {
             // Nhiều hơn 12 màn hình
             columns = 4;
@@ -181,6 +182,11 @@ class DashboardGrid {
                     gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
                     gridTemplateRows = 'repeat(3, minmax(0, 1fr))';
                     layoutClass = 'layout-eleven';
+                    break;
+                case 'grid-4-3':
+                    gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
+                    gridTemplateRows = 'repeat(3, minmax(0, 1fr))';
+                    layoutClass = 'layout-4-3';
                     break;
                 default:
                     break;
@@ -344,7 +350,7 @@ class DashboardGrid {
         } = this.currentLayout;
 
         // Reset grid element styles before applying new layout
-        gridElement.classList.remove('layout-4-2', 'layout-4-2-last3', 'layout-ten', 'layout-eleven');
+        gridElement.classList.remove('layout-4-2', 'layout-4-2-last3', 'layout-ten', 'layout-eleven', 'layout-4-3');
         gridElement.style.gridTemplateColumns = '';
         gridElement.style.gridTemplateRows = '';
         gridElement.style.gridAutoFlow = '';
