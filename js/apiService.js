@@ -65,7 +65,7 @@ class ApiService {
     }
 
     // Bắt đầu polling data
-    startPolling(intervalMs = 2000) {
+    startPolling(intervalMs = 20000000) {
         this.stopPolling();
         this.callDefaultAPI(); // Gọi ngay lập tức
         this.pollingInterval = setInterval(() => {

@@ -34,12 +34,6 @@ class DashboardGrid {
     setupContainer() {
         this.container.innerHTML = `
             <div class="dashboard-wrapper">
-                <div class="dashboard-header">
-                    <h1 class="dashboard-title">Bảng điều khiển</h1>
-                    <div class="dashboard-info">
-                        <span class="active-count">0</span> màn hình hoạt động
-                    </div>
-                </div>
                 <div id="dashboard-grid" class="dashboard-grid"></div>
             </div>
         `;
@@ -75,56 +69,122 @@ class DashboardGrid {
      * Tính toán layout dựa trên số màn hình
      */
     calculateLayout(screenCount) {
-        let columns, rows, flexBasis;
-        
         if (screenCount === 0) {
             return null;
         }
+
+        const GRID_GAP_REM = 0.5;
+
+        let columns = 1;
+        let rows = 1;
+        let layoutMode = 'flex';
+        let flexGrow = 1;
 
         // Tính số cột và hàng tối ưu để lấp đầy màn hình
         if (screenCount === 1) {
             columns = 1;
             rows = 1;
-            flexBasis = '100%';
         } else if (screenCount === 2) {
             columns = 2;
             rows = 1;
-            flexBasis = '50%';
         } else if (screenCount === 3) {
             columns = 3;
             rows = 1;
-            flexBasis = '33.33%';
         } else if (screenCount === 4) {
             columns = 2;
             rows = 2;
-            flexBasis = '50%';
         } else if (screenCount === 5 || screenCount === 6) {
             columns = 3;
             rows = 2;
-            flexBasis = '33.33%';
-        } else if (screenCount >= 7 && screenCount <= 9) {
+        } else if (screenCount === 7) {
+            columns = 4;
+            rows = 2;
+            layoutMode = 'grid-4-2-last3';
+        } else if (screenCount === 8) {
+            columns = 4;
+            rows = 2;
+            layoutMode = 'grid-4-2';
+        } else if (screenCount === 9) {
             columns = 3;
             rows = 3;
-            flexBasis = '33.33%';
+        } else if (screenCount === 10) {
+            columns = 4;
+            rows = 3;
+            layoutMode = 'grid-4-4-2';
+        } else if (screenCount === 11) {
+            columns = 4;
+            rows = 3;
+            layoutMode = 'grid-4-4-3';
         } else if (screenCount >= 10 && screenCount <= 12) {
             columns = 4;
             rows = 3;
-            flexBasis = '25%';
         } else {
             // Nhiều hơn 12 màn hình
             columns = 4;
             rows = Math.ceil(screenCount / 4);
-            flexBasis = '25%';
         }
 
-        // Điều chỉnh flex-grow để lấp đầy màn hình
         const totalCells = columns * rows;
         const emptyCells = totalCells - screenCount;
-        let flexGrow = 1;
-        
-        if (emptyCells > 0 && screenCount < columns) {
+
+        if (layoutMode === 'flex' && emptyCells > 0 && screenCount < columns) {
             // Có ô trống và ít hơn 1 hàng đầy
             flexGrow = columns / screenCount;
+        }
+
+        let flexBasis = null;
+        let cellHeight = null;
+        let gridTemplateColumns = null;
+        let gridTemplateRows = null;
+        let justifyContent = 'flex-start';
+        let layoutClass = '';
+
+        if (layoutMode === 'flex') {
+            const widthPercent = (100 / columns).toFixed(4);
+            const heightPercent = rows > 0 ? (100 / rows).toFixed(4) : '100.0000';
+            const horizontalAdjustment = columns > 1 ? ((columns - 1) / columns * GRID_GAP_REM).toFixed(4) : '0';
+            const verticalAdjustment = rows > 1 ? ((rows - 1) / rows * GRID_GAP_REM).toFixed(4) : '0';
+
+            flexBasis = columns === 1
+                ? '100%'
+                : `calc(${widthPercent}% - ${horizontalAdjustment}rem)`;
+
+            cellHeight = rows === 1
+                ? '100%'
+                : `calc(${heightPercent}% - ${verticalAdjustment}rem)`;
+
+            const itemsOnLastRow = screenCount % columns || columns;
+            const hasPartialLastRow = itemsOnLastRow !== columns;
+            if (screenCount === 1) {
+                justifyContent = 'center';
+            } else if (hasPartialLastRow) {
+                justifyContent = 'center';
+            }
+        } else {
+            switch (layoutMode) {
+                case 'grid-4-2':
+                    gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
+                    gridTemplateRows = 'repeat(2, minmax(0, 1fr))';
+                    layoutClass = 'layout-4-2';
+                    break;
+                case 'grid-4-2-last3':
+                    gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
+                    gridTemplateRows = 'repeat(2, minmax(0, 1fr))';
+                    layoutClass = 'layout-4-2-last3';
+                    break;
+                case 'grid-4-4-2':
+                    gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
+                    gridTemplateRows = 'repeat(3, minmax(0, 1fr))';
+                    layoutClass = 'layout-ten';
+                    break;
+                case 'grid-4-4-3':
+                    gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
+                    gridTemplateRows = 'repeat(3, minmax(0, 1fr))';
+                    layoutClass = 'layout-eleven';
+                    break;
+                default:
+                    break;
+            }
         }
 
         return {
@@ -132,6 +192,12 @@ class DashboardGrid {
             rows,
             flexBasis,
             flexGrow,
+            cellHeight,
+            layoutMode,
+            gridTemplateColumns,
+            gridTemplateRows,
+            justifyContent,
+            layoutClass,
             screenCount,
             totalCells,
             emptyCells
@@ -205,7 +271,6 @@ class DashboardGrid {
                         <p class="map-description">Nhấn để xem bản đồ</p>
                     </div>
                 </div>
-                <button class="action-btn">Chi tiết →</button>
             `;
         } else {
             div.innerHTML = `
@@ -220,24 +285,8 @@ class DashboardGrid {
                             <div class="widget-icon">📊</div>
                             <span>Widget 1</span>
                         </div>
-                        <div class="widget-placeholder top-right">
-                            <div class="widget-icon">📈</div>
-                            <span>Widget 2</span>
-                        </div>
-                        <div class="widget-placeholder bottom-left">
-                            <div class="widget-icon">⚠️</div>
-                            <span>Widget 3</span>
-                        </div>
-                        <div class="widget-placeholder bottom-right">
-                            <div class="widget-icon">ℹ️</div>
-                            <span>Widget 4</span>
-                        </div>
+                       
                     </div>
-                </div>
-                <div class="screen-tile-footer">
-                    <button class="screen-action-btn" onclick="DashboardGrid.openDetail(${screen.STT})">
-                        Chi tiết →
-                    </button>
                 </div>
             `;
         }
@@ -281,19 +330,70 @@ class DashboardGrid {
         if (!this.currentLayout) return;
 
         const gridElement = document.getElementById('dashboard-grid');
-        const { flexBasis, flexGrow } = this.currentLayout;
+        if (!gridElement) return;
+
+        const {
+            flexBasis,
+            flexGrow,
+            cellHeight,
+            layoutMode,
+            gridTemplateColumns,
+            gridTemplateRows,
+            justifyContent,
+            layoutClass
+        } = this.currentLayout;
+
+        // Reset grid element styles before applying new layout
+        gridElement.classList.remove('layout-4-2', 'layout-4-2-last3', 'layout-ten', 'layout-eleven');
+        gridElement.style.gridTemplateColumns = '';
+        gridElement.style.gridTemplateRows = '';
+        gridElement.style.gridAutoFlow = '';
+        gridElement.style.justifyContent = '';
+        gridElement.style.alignContent = '';
+        gridElement.style.alignItems = '';
+        gridElement.style.justifyItems = '';
+        gridElement.style.flexWrap = '';
+        gridElement.style.width = '100%';
+        gridElement.style.height = '100%';
+
+        this.screenElements.forEach((element) => {
+            element.style.flexBasis = '';
+            element.style.flexGrow = '';
+            element.style.maxWidth = '';
+            element.style.height = '';
+            element.style.gridColumn = '';
+            element.style.gridRow = '';
+        });
+
+        const isGridLayout = layoutMode !== 'flex' && layoutClass;
+
+        if (isGridLayout) {
+            gridElement.style.display = 'grid';
+            gridElement.style.gridTemplateColumns = gridTemplateColumns;
+            gridElement.style.gridTemplateRows = gridTemplateRows;
+            gridElement.style.gridAutoFlow = 'row';
+            gridElement.style.justifyContent = 'center';
+            gridElement.style.alignContent = 'stretch';
+            gridElement.style.alignItems = 'stretch';
+            gridElement.style.justifyItems = 'stretch';
+            gridElement.classList.add(layoutClass);
+            return;
+        }
 
         // Apply flex styles to grid
         gridElement.style.display = 'flex';
         gridElement.style.flexWrap = 'wrap';
         gridElement.style.width = '100%';
         gridElement.style.height = '100%';
+        gridElement.style.alignContent = 'stretch';
+        gridElement.style.justifyContent = justifyContent;
 
         // Apply styles to each screen tile
         this.screenElements.forEach((element) => {
             element.style.flexBasis = flexBasis;
             element.style.flexGrow = flexGrow;
             element.style.maxWidth = flexBasis;
+            element.style.height = cellHeight;
         });
     }
 
