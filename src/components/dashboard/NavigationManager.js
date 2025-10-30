@@ -30,14 +30,14 @@ class NavigationManager {
         this.keyHandlers.set('ArrowDown', () => this.navigate('down'));
         this.keyHandlers.set('ArrowLeft', () => this.navigate('left'));
         this.keyHandlers.set('ArrowRight', () => this.navigate('right'));
-        
+
         // Enter/OK key
         this.keyHandlers.set('Enter', () => this.handleEnter());
-        
+
         // Back key
         this.keyHandlers.set('Escape', () => this.handleBack());
         this.keyHandlers.set('10009', () => this.handleBack()); // Tizen Back key
-        
+
         // Number keys for quick navigation (including 0 for M0)
         for (let i = 0; i <= 9; i++) {
             this.keyHandlers.set(String(i), () => this.quickNavigate(i));
@@ -79,11 +79,11 @@ class NavigationManager {
 
         // Check if we have a handler for this key
         const handler = this.keyHandlers.get(key) || this.keyHandlers.get(String(keyCode));
-        
+
         if (handler) {
             this.isNavigating = true;
             handler();
-            
+
             // Reset navigation flag after delay
             setTimeout(() => {
                 this.isNavigating = false;
@@ -152,7 +152,7 @@ class NavigationManager {
      */
     navigateInDashboard(direction) {
         const currentElement = document.activeElement;
-        
+
         // Nếu chưa có focus, focus vào màn hình đầu tiên
         if (!currentElement || !currentElement.classList.contains('screen-tile')) {
             const firstScreen = document.querySelector('.screen-tile');
@@ -166,7 +166,7 @@ class NavigationManager {
         // Get navigation index
         const navAttr = `data-nav-${direction}`;
         const targetIndex = currentElement.getAttribute(navAttr);
-        
+
         if (targetIndex && targetIndex !== '-1') {
             const targetElement = document.querySelector(`.screen-tile[data-index="${targetIndex}"]`);
             if (targetElement) {
@@ -259,7 +259,7 @@ class NavigationManager {
                     });
                 }
                 break;
-                
+
             case 'dashboard':
                 // Trong dashboard, Enter mở chi tiết màn hình
                 const focusedScreen = document.activeElement;
@@ -267,7 +267,7 @@ class NavigationManager {
                     const stt = focusedScreen.getAttribute('data-stt');
                     if (stt) {
                         const screenNumber = parseInt(stt);
-                        
+
                         // M0 (screen 0) - navigate to map view
                         if (screenNumber === 0) {
                             Config.log('info', 'M0 selected - navigating to map view');
@@ -284,7 +284,7 @@ class NavigationManager {
                     }
                 }
                 break;
-                
+
             case 'detail':
                 // Trong detail, Enter có thể kích hoạt widget
                 const focusedWidget = document.activeElement;
@@ -301,46 +301,49 @@ class NavigationManager {
     handleBack() {
         Config.log('debug', `Back pressed in ${this.currentView} view`);
 
-        switch (this.currentView) {
-            case 'detail':
-                // Quay lại dashboard
-                window.dispatchEvent(new CustomEvent('navigateBack', {
-                    detail: { from: 'detail', to: 'dashboard' }
-                }));
-                break;
-                
-            case 'dashboard':
-                // Check if M0 screen is active - if yes, navigate to map
-                const hasM0 = document.querySelector('.screen-tile[data-stt="0"]');
-                if (hasM0) {
-                    Config.log('info', 'M0 active - navigating to map view on back');
-                    if (window.app && typeof window.app.lockMapView === 'function') {
-                        window.app.lockMapView();
-                    }
-                    window.app.router.navigate('/map');
-                } else {
-                    // Normal back navigation
-                    window.dispatchEvent(new CustomEvent('navigateBack', {
-                        detail: { from: 'dashboard', to: 'map' }
-                    }));
-                }
-                break;
-                
-            case 'map':
-                // Trên Tizen có thể thoát ứng dụng, còn lại quay về dashboard
-                if (Config.isTizen()) {
-                    try {
-                        window.tizen.application.getCurrentApplication().exit();
-                    } catch (e) {
-                        Config.log('error', 'Failed to exit app:', e);
-                    }
-                } else {
-                    window.dispatchEvent(new CustomEvent('navigateBack', {
-                        detail: { from: 'map', to: 'dashboard' }
-                    }));
-                }
-                break;
-        }
+        window.app.router.navigate('/dashboard');
+
+
+        // switch (this.currentView) {
+        //     case 'detail':
+        //         // Quay lại dashboard
+        //         window.dispatchEvent(new CustomEvent('navigateBack', {
+        //             detail: { from: 'detail', to: 'dashboard' }
+        //         }));
+        //         break;
+
+        //     case 'dashboard':
+        //         // Check if M0 screen is active - if yes, navigate to map
+        //         const hasM0 = document.querySelector('.screen-tile[data-stt="0"]');
+        //         if (hasM0) {
+        //             Config.log('info', 'M0 active - navigating to map view on back');
+        //             if (window.app && typeof window.app.lockMapView === 'function') {
+        //                 window.app.lockMapView();
+        //             }
+        //             window.app.router.navigate('/map');
+        //         } else {
+        //             // Normal back navigation
+        //             window.dispatchEvent(new CustomEvent('navigateBack', {
+        //                 detail: { from: 'dashboard', to: 'map' }
+        //             }));
+        //         }
+        //         break;
+
+        //     case 'map':
+        //         // Trên Tizen có thể thoát ứng dụng, còn lại quay về dashboard
+        //         if (Config.isTizen()) {
+        //             try {
+        //                 window.tizen.application.getCurrentApplication().exit();
+        //             } catch (e) {
+        //                 Config.log('error', 'Failed to exit app:', e);
+        //             }
+        //         } else {
+        //             window.dispatchEvent(new CustomEvent('navigateBack', {
+        //                 detail: { from: 'map', to: 'dashboard' }
+        //             }));
+        //         }
+        //         break;
+        // }
     }
 
     /**
@@ -353,7 +356,7 @@ class NavigationManager {
         if (targetScreen) {
             this.moveFocus(targetScreen);
             Config.log('info', `Quick navigated to screen ${number}`);
-            
+
             // If it's M0, automatically navigate to map
             if (number === 0) {
                 setTimeout(() => {
@@ -370,7 +373,7 @@ class NavigationManager {
         this.currentFocus = null;
         this.focusHistory = [];
         this.navigationMap.clear();
-        
+
         // Remove all focused classes
         document.querySelectorAll('.focused').forEach(el => {
             el.classList.remove('focused');
@@ -399,7 +402,7 @@ class NavigationManager {
                     this.navigationMap.set(index, navData);
                 });
                 break;
-                
+
             case 'detail':
                 // Build map cho widgets
                 const widgets = document.querySelectorAll('.detail-widget');

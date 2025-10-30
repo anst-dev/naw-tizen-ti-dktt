@@ -238,9 +238,9 @@ class DashboardGrid {
         gridElement.innerHTML = '';
         this.screenElements.clear();
 
-        // Không có màn hình nào
+        // Không có màn hình nào -- khôn hiển thị gì hết
         if (!this.currentLayout) {
-            gridElement.innerHTML = '<div class="no-screens">Không có màn hình nào được kích hoạt</div>';
+            gridElement.innerHTML = '<div class="no-screens"></div>';
             return;
         }
 
