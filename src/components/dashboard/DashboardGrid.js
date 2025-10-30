@@ -217,6 +217,23 @@ class DashboardGrid {
         const gridElement = document.getElementById('dashboard-grid');
         if (!gridElement) return;
 
+        const activeElement = document.activeElement;
+        let previousFocusStt = null;
+
+        if (activeElement) {
+            let activeTile = null;
+
+            if (activeElement.classList && activeElement.classList.contains('screen-tile')) {
+                activeTile = activeElement;
+            } else if (typeof activeElement.closest === 'function') {
+                activeTile = activeElement.closest('.screen-tile');
+            }
+
+            if (activeTile) {
+                previousFocusStt = activeTile.getAttribute('data-stt');
+            }
+        }
+
         // Clear existing elements
         gridElement.innerHTML = '';
         this.screenElements.clear();
@@ -241,6 +258,8 @@ class DashboardGrid {
 
         // Apply flex styles
         this.applyFlexLayout();
+
+        this.restoreFocus(previousFocusStt);
     }
 
     /**
@@ -401,6 +420,47 @@ class DashboardGrid {
             element.style.maxWidth = flexBasis;
             element.style.height = cellHeight;
         });
+    }
+
+    restoreFocus(previousFocusStt) {
+        if (!previousFocusStt && previousFocusStt !== '0') {
+            return;
+        }
+
+        const targetSelector = `.screen-tile[data-stt="${previousFocusStt}"]`;
+        const targetElement = this.container?.querySelector(targetSelector);
+        const navigationManager = window.app?.navigationManager;
+
+        const focusWithManager = (element) => {
+            if (!element) {
+                return;
+            }
+
+            if (navigationManager && typeof navigationManager.moveFocus === 'function') {
+                navigationManager.moveFocus(element);
+            } else {
+                document.querySelectorAll('.screen-tile.focused').forEach((focusedEl) => {
+                    if (focusedEl !== element) {
+                        focusedEl.classList.remove('focused');
+                    }
+                });
+                element.focus();
+                element.classList.add('focused');
+            }
+        };
+
+        if (targetElement) {
+            focusWithManager(targetElement);
+            return;
+        }
+
+        const fallbackElement =
+            this.container?.querySelector('.screen-tile.map-screen') ||
+            this.container?.querySelector('.screen-tile[data-stt="0"]');
+
+        if (fallbackElement) {
+            focusWithManager(fallbackElement);
+        }
     }
 
     /**
