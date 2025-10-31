@@ -305,7 +305,7 @@ class DashboardGrid {
                     <h3 class="screen-name">Màn hình Bản đồ</h3>
                 </div>
                 <div class="screen-tile-content">
-                    <div class="map-icon-container">
+                    <div class="screen-preview-container">
                         <div class="map-icon">🗺️</div>
                         <p class="map-description">Nhấn để xem bản đồ</p>
                     </div>
