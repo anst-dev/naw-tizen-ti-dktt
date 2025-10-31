@@ -18,6 +18,7 @@ class NavigationManager {
     init() {
         this.bindKeyEvents();
         this.setupKeyHandlers();
+        this.registerTizenKeys();
         Config.log('info', 'NavigationManager initialized');
     }
 
@@ -42,12 +43,28 @@ class NavigationManager {
         for (let i = 0; i <= 9; i++) {
             this.keyHandlers.set(String(i), () => this.quickNavigate(i));
         }
+
+        const zoomIn = () => this.zoomMap(1);
+        const zoomOut = () => this.zoomMap(-1);
+
+        const zoomInKeys = ['AudioVolumeUp', 'VolumeUp', '+', '='];
+        const zoomOutKeys = ['AudioVolumeDown', 'VolumeDown', '-', '_'];
+        const zoomInCodes = ['175', '447', '107', '187'];
+        const zoomOutCodes = ['174', '448', '109', '189'];
+
+        zoomInKeys.forEach(key => this.keyHandlers.set(key, zoomIn));
+        zoomOutKeys.forEach(key => this.keyHandlers.set(key, zoomOut));
+        zoomInCodes.forEach(code => this.keyHandlers.set(code, zoomIn));
+        zoomOutCodes.forEach(code => this.keyHandlers.set(code, zoomOut));
     }
 
     /**
      * Bind keyboard events
      */
     bindKeyEvents() {
+        const zoomKeys = ['AudioVolumeUp', 'AudioVolumeDown', 'VolumeUp', 'VolumeDown', '+', '-', '=', '_'];
+        const zoomKeyCodes = ['175', '174', '447', '448', '107', '109', '187', '189'];
+
         document.addEventListener('keydown', (e) => {
             // Prevent default cho navigation keys
             if (Config.NAVIGATION.KEYS.UP.includes(e.key) ||
@@ -55,7 +72,9 @@ class NavigationManager {
                 Config.NAVIGATION.KEYS.LEFT.includes(e.key) ||
                 Config.NAVIGATION.KEYS.RIGHT.includes(e.key) ||
                 Config.NAVIGATION.KEYS.ENTER.includes(e.key) ||
-                Config.NAVIGATION.KEYS.BACK.includes(e.key)) {
+                Config.NAVIGATION.KEYS.BACK.includes(e.key) ||
+                zoomKeys.includes(e.key) ||
+                zoomKeyCodes.includes(String(e.keyCode))) {
                 e.preventDefault();
             }
 
@@ -69,6 +88,32 @@ class NavigationManager {
             this.resetNavigation();
             Config.log('debug', `View changed to: ${this.currentView}`);
         });
+    }
+
+    /**
+     * Register hardware keys on Tizen devices
+     */
+    registerTizenKeys() {
+        if (!Config.isTizen()) {
+            return;
+        }
+
+        try {
+            const tvInputDevice = window.tizen && window.tizen.tvinputdevice;
+            if (!tvInputDevice || typeof tvInputDevice.registerKey !== 'function') {
+                return;
+            }
+
+            ['VolumeUp', 'VolumeDown'].forEach(key => {
+                try {
+                    tvInputDevice.registerKey(key);
+                } catch (error) {
+                    Config.log('warn', `Failed to register ${key} key`, error);
+                }
+            });
+        } catch (error) {
+            Config.log('warn', 'Unable to register Tizen hardware keys', error);
+        }
     }
 
     /**
@@ -116,7 +161,7 @@ class NavigationManager {
      */
     navigateInMap(direction) {
         // Trong map view, có thể pan bản đồ
-        const map = window.mapFullscreen?.getMap();
+        const map = this.getMapInstance();
         if (!map) return;
 
         const view = map.getView();
@@ -144,6 +189,85 @@ class NavigationManager {
         view.animate({
             center: newCenter,
             duration: Config.NAVIGATION.ANIMATION_DURATION
+        });
+    }
+
+    /**
+     * Get map component instance
+     */
+    getMapComponent() {
+        if (window.app && window.app.mapFullscreen) {
+            return window.app.mapFullscreen;
+        }
+
+        if (window.mapFullscreen) {
+            return window.mapFullscreen;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get OpenLayers map instance
+     */
+    getMapInstance() {
+        const component = this.getMapComponent();
+        if (!component) {
+            return null;
+        }
+
+        if (typeof component.getMap === 'function') {
+            const map = component.getMap();
+            if (map) {
+                return map;
+            }
+        }
+
+        if (component.map) {
+            return component.map;
+        }
+
+        return null;
+    }
+
+    /**
+     * Adjust map zoom level
+     * @param {number} step
+     */
+    zoomMap(step = 1) {
+        if (this.currentView !== 'map') {
+            return;
+        }
+
+        const mapComponent = this.getMapComponent();
+        if (mapComponent && typeof mapComponent.adjustZoom === 'function') {
+            mapComponent.adjustZoom(step);
+            return;
+        }
+
+        const map = this.getMapInstance();
+        if (!map) {
+            return;
+        }
+
+        const view = map.getView();
+        if (!view) {
+            return;
+        }
+
+        const currentZoom = typeof view.getZoom === 'function' ? view.getZoom() : Config.MAP.FULLSCREEN_ZOOM;
+        const minZoom = typeof Config.MAP.MIN_ZOOM === 'number' ? Config.MAP.MIN_ZOOM : 0;
+        const maxZoom = typeof Config.MAP.MAX_ZOOM === 'number' ? Config.MAP.MAX_ZOOM : 28;
+        const targetZoom = Math.min(maxZoom, Math.max(minZoom, currentZoom + step));
+
+        if (targetZoom === currentZoom) {
+            return;
+        }
+
+        const animationDuration = (Config.NAVIGATION && Config.NAVIGATION.ANIMATION_DURATION) || 300;
+        view.animate({
+            zoom: targetZoom,
+            duration: animationDuration
         });
     }
 
@@ -257,15 +381,7 @@ class NavigationManager {
 
         switch (this.currentView) {
             case 'map':
-                // Trong map view, Enter có thể zoom in
-                const map = window.mapFullscreen?.getMap();
-                if (map) {
-                    const view = map.getView();
-                    view.animate({
-                        zoom: view.getZoom() + 1,
-                        duration: Config.NAVIGATION.ANIMATION_DURATION
-                    });
-                }
+                this.zoomMap(1);
                 break;
 
             case 'dashboard':

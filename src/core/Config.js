@@ -19,7 +19,7 @@ const Config = {
         ENDPOINTS: {
             GET_ACTIVE_DISPLAY: '/api/services/app/HienThiDieuKhienTrungTam/GetActiveDisplays'
         },
-        POLLING_INTERVAL: 200000, // 2 giây
+        POLLING_INTERVAL: 2000, // 2 giây
         TIMEOUT: 10000 // 10 giây
     },
 
@@ -63,6 +63,8 @@ const Config = {
         DEFAULT_CENTER: [105.695587, 18.671575],
         DEFAULT_ZOOM: 10,
         FULLSCREEN_ZOOM: 10,
+        MIN_ZOOM: 4,
+        MAX_ZOOM: 18,
         WIDGET_ZOOM: 14,
         TILE_SOURCE: 'OSM' // OpenStreetMap
     },

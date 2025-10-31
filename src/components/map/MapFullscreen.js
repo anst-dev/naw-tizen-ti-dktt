@@ -24,6 +24,10 @@ class MapFullscreen {
         this.setupContainer();
         this.initMap();
         this.setupResizeObserver();
+
+        if (typeof window !== 'undefined') {
+            window.mapFullscreen = this;
+        }
         
         Config.log('info', 'MapFullscreen component initialized');
         return true;
@@ -37,10 +41,6 @@ class MapFullscreen {
             <div class="map-fullscreen-wrapper">
                 <div class="map-fullscreen-header">
                     <h1 class="map-title">Hệ thống giám sát phòng điều khiển</h1>
-                    <div class="map-status">
-                        <span class="status-indicator"></span>
-                        <span class="status-text">Đang kết nối...</span>
-                    </div>
                 </div>
                 <div id="map-fullscreen" class="map-fullscreen"></div>
                 <div class="map-fullscreen-overlay" id="map-overlay">
@@ -80,7 +80,9 @@ class MapFullscreen {
                 ],
                 view: new ol.View({
                     center: ol.proj.fromLonLat(Config.MAP.DEFAULT_CENTER),
-                    zoom: Config.MAP.FULLSCREEN_ZOOM
+                    zoom: Config.MAP.FULLSCREEN_ZOOM,
+                    minZoom: typeof Config.MAP.MIN_ZOOM === 'number' ? Config.MAP.MIN_ZOOM : undefined,
+                    maxZoom: typeof Config.MAP.MAX_ZOOM === 'number' ? Config.MAP.MAX_ZOOM : undefined
                 }),
                 controls: [] // Simplified controls for now
             });
@@ -292,6 +294,59 @@ class MapFullscreen {
     }
 
     /**
+     * Adjust map zoom by step
+     * @param {number} step
+     */
+    adjustZoom(step = 1) {
+        if (!this.map || typeof step !== 'number') {
+            return;
+        }
+
+        const view = this.map.getView();
+        if (!view) {
+            return;
+        }
+
+        const viewMinZoom = typeof view.getMinZoom === 'function' ? view.getMinZoom() : undefined;
+        const viewMaxZoom = typeof view.getMaxZoom === 'function' ? view.getMaxZoom() : undefined;
+        const minZoom =
+            typeof Config.MAP.MIN_ZOOM === 'number'
+                ? Config.MAP.MIN_ZOOM
+                : (typeof viewMinZoom === 'number' ? viewMinZoom : 0);
+        const maxZoom =
+            typeof Config.MAP.MAX_ZOOM === 'number'
+                ? Config.MAP.MAX_ZOOM
+                : (typeof viewMaxZoom === 'number' ? viewMaxZoom : 28);
+
+        const currentZoom = typeof view.getZoom === 'function' ? view.getZoom() : Config.MAP.FULLSCREEN_ZOOM;
+        const targetZoom = Math.min(maxZoom, Math.max(minZoom, currentZoom + step));
+
+        if (!Number.isFinite(targetZoom) || targetZoom === currentZoom) {
+            return;
+        }
+
+        const animationDuration = (Config.NAVIGATION && Config.NAVIGATION.ANIMATION_DURATION) || 300;
+        view.animate({
+            zoom: targetZoom,
+            duration: animationDuration
+        });
+    }
+
+    /**
+     * Zoom in helper
+     */
+    zoomIn() {
+        this.adjustZoom(1);
+    }
+
+    /**
+     * Zoom out helper
+     */
+    zoomOut() {
+        this.adjustZoom(-1);
+    }
+
+    /**
      * Get map instance
      */
     getMap() {
@@ -316,6 +371,9 @@ class MapFullscreen {
         }
 
         this.isVisible = false;
+        if (typeof window !== 'undefined' && window.mapFullscreen === this) {
+            delete window.mapFullscreen;
+        }
         Config.log('info', 'MapFullscreen component destroyed');
     }
 }
