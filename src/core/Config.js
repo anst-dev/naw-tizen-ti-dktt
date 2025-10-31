@@ -19,7 +19,7 @@ const Config = {
         ENDPOINTS: {
             GET_ACTIVE_DISPLAY: '/api/services/app/HienThiDieuKhienTrungTam/GetActiveDisplays'
         },
-        POLLING_INTERVAL: 2000, // 2 giây
+        POLLING_INTERVAL: 200000, // 2 giây
         TIMEOUT: 10000 // 10 giây
     },
 

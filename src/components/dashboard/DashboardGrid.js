@@ -303,7 +303,6 @@ class DashboardGrid {
                 <div class="screen-tile-header">
                     <span class="screen-number">M${screen.STT}</span>
                     <h3 class="screen-name">Màn hình Bản đồ</h3>
-                    <span class="screen-status active">●</span>
                 </div>
                 <div class="screen-tile-content">
                     <div class="map-icon-container">
@@ -317,12 +316,10 @@ class DashboardGrid {
                 <div class="screen-tile-header">
                     <span class="screen-number">M${screen.STT}</span>
                     <h3 class="screen-name">${screenTitle}</h3>
-                    <span class="screen-status active">&#9679;</span>
                 </div>
                 <div class="screen-tile-content">
                     <div class="screen-preview-container">
                         <img src="${previewImage}" alt="Preview for ${screenTitle}" class="screen-preview-image"/>
-                        <p class="screen-preview-description">Nh&#7845;n &#273;&#7875; xem chi ti&#7871;t</p>
                     </div>
                 </div>
             `;
