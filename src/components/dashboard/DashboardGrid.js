@@ -2,6 +2,22 @@
  * DashboardGrid.js - Component hiển thị grid dashboard với layout động
  */
 
+const SCREEN_PREVIEW_IMAGES = {
+    1: 'images/1_VanHanh_HN.png',
+    2: 'images/2_VanHanh_CB.png',
+    3: 'images/3_Bom_Tang_Ap.png',
+    4: 'images/4_Scada.png',
+    5: 'images/5_DiemChay.png',
+    6: 'images/6_LDM_TDH.png',
+    7: 'images/7_TienDoThiCong.png',
+    8: 'images/8_GhiChiSo.png',
+    9: 'images/9_CongNo.png',
+    10: 'images/10_ThatThoat.png',
+    11: 'images/11_ChatLuongNuoc.png'
+};
+
+const DEFAULT_SCREEN_PREVIEW = 'images/tizen_32.png';
+
 class DashboardGrid {
     constructor(containerId = 'dashboard-container') {
         this.containerId = containerId;
@@ -278,6 +294,9 @@ class DashboardGrid {
         // Navigation attributes cho điều khiển
         this.setNavigationAttributes(div, index);
 
+        const previewImage = this.getScreenPreviewImage(screen.STT);
+        const screenTitle = screen.TenManHinh || ('M&#224;n h&#236;nh ' + screen.STT);
+
         // Special content for M0
         if (screen.STT === 0) {
             div.innerHTML = `
@@ -297,16 +316,13 @@ class DashboardGrid {
             div.innerHTML = `
                 <div class="screen-tile-header">
                     <span class="screen-number">M${screen.STT}</span>
-                    <h3 class="screen-name">${screen.TenManHinh || 'Màn hình ' + screen.STT}</h3>
-                    <span class="screen-status active">●</span>
+                    <h3 class="screen-name">${screenTitle}</h3>
+                    <span class="screen-status active">&#9679;</span>
                 </div>
                 <div class="screen-tile-content">
-                    <div class="screen-widgets">
-                        <div class="widget-placeholder top-left">
-                            <div class="widget-icon">📊</div>
-                            <span>Widget 1</span>
-                        </div>
-                       
+                    <div class="screen-preview-container">
+                        <img src="${previewImage}" alt="Preview for ${screenTitle}" class="screen-preview-image"/>
+                        <p class="screen-preview-description">Nh&#7845;n &#273;&#7875; xem chi ti&#7871;t</p>
                     </div>
                 </div>
             `;
@@ -317,6 +333,19 @@ class DashboardGrid {
         div.addEventListener('keydown', (e) => this.handleScreenKeydown(e, screen, index));
 
         return div;
+    }
+
+    /**
+     * Get preview image path matching screen STT
+     */
+    getScreenPreviewImage(stt) {
+        const numericStt = Number(stt);
+        if (!Number.isFinite(numericStt)) {
+            return DEFAULT_SCREEN_PREVIEW;
+        }
+
+        const imagePath = SCREEN_PREVIEW_IMAGES[numericStt];
+        return imagePath || DEFAULT_SCREEN_PREVIEW;
     }
 
     /**
@@ -635,3 +664,4 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
     window.DashboardGrid = DashboardGrid;
 }
+

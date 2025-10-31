@@ -280,6 +280,31 @@
     color: var(--text-secondary);
 }
 
+.screen-preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: var(--spacing-xl);
+    text-align: center;
+}
+
+.screen-preview-image {
+    width: 70%;
+    max-width: 240px;
+    height: auto;
+    margin-bottom: var(--spacing-md);
+    object-fit: contain;
+    display: block;
+}
+
+.screen-preview-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
 /* Screen Footer
 .screen-tile-footer {
     padding: var(--spacing-sm) var(--spacing-md);
