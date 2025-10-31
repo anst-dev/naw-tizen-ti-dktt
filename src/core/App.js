@@ -336,7 +336,7 @@ class App {
 
         // Ưu tiên sử dụng Routes mới nếu đang trong detail view
         if (this.routes.getCurrentScreen()) {
-            this.routes.back();
+            this.navigationManager.handleBack();
             this.unlockMapView();
             // Luôn quay về dashboard với hệ thống 2 cấp mới
             this.currentView = 'dashboard';
@@ -364,7 +364,7 @@ class App {
             case 'back':
                 // Kiểm tra nếu đang dùng Routes system
                 if (this.routes.getCurrentScreen()) {
-                    this.routes.back();
+                    this.navigationManager.handleBack();
                 } else if (this.currentView === 'detail') {
                     this.handleNavigateBack({ to: 'dashboard' });
                 } else if (this.currentView === 'dashboard') {

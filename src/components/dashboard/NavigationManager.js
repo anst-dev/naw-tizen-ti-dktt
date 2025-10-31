@@ -301,49 +301,125 @@ class NavigationManager {
     handleBack() {
         Config.log('debug', `Back pressed in ${this.currentView} view`);
 
-        window.app.router.navigate('/dashboard');
+        // Thực hiện logic tương tự như routes.back()
+        const detailContainer = document.getElementById('detail-container');
+        
+        // Clear detail container content trước
+        if (detailContainer) {
+            // Clear all widget contents
+            const widgets = detailContainer.querySelectorAll('.widget-content');
+            widgets.forEach(widget => {
+                widget.innerHTML = '';
+            });
+            
+            // Remove iframe container completely
+            const iframeContainer = detailContainer.querySelector('#iframe-container');
+            if (iframeContainer) {
+                iframeContainer.remove();
+            }
+            
+            // Show widget grid again
+            const widgetGrid = detailContainer.querySelector('.widget-grid');
+            if (widgetGrid) {
+                widgetGrid.style.display = '';
+            }
+        }
+        
+        // Luôn quay về Dashboard - hệ thống 2 cấp đơn giản
+        this.hideAllContainers();
+        
+        // Đợi một chút để animation hoàn tất
+        setTimeout(() => {
+            // Hiển thị Dashboard
+            const dashboardContainer = document.getElementById('dashboard-container');
+            if (dashboardContainer) {
+                dashboardContainer.style.display = 'block';
+                // Force reflow trước khi add class active
+                dashboardContainer.offsetHeight;
+                dashboardContainer.classList.add('active');
+            }
+            
+            // Render lại Dashboard Grid
+            if (window.app && window.app.dashboardGrid) {
+                window.app.dashboardGrid.show();
+                const screens = window.app.screenManager?.getActiveScreens() || [];
+                window.app.dashboardGrid.render(screens);
+            }
+            
+        }, 50);
+        
+        // Reset màn hình hiện tại và currentView
+        this.currentView = 'dashboard';
+        
+        // Reset currentScreen trong Routes nếu có
+        if (window.app && window.app.routes) {
+            window.app.routes.currentScreen = null;
+        }
+    }
 
+    /**
+     * Ẩn tất cả containers
+     */
+    hideAllContainers() {
+        const mapContainer = document.getElementById('map-fullscreen-container');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        const detailContainer = document.getElementById('detail-container');
+        
+        // Remove active class trước
+        if (mapContainer) {
+            mapContainer.classList.remove('active');
+        }
+        
+        if (dashboardContainer) {
+            dashboardContainer.classList.remove('active');
+        }
+        
+        if (detailContainer) {
+            detailContainer.classList.remove('active');
+            
+            // Clear widget contents
+            const widgets = detailContainer.querySelectorAll('.widget-content');
+            widgets.forEach(widget => {
+                widget.innerHTML = '';
+            });
+            
+            // Reset widget grid display
+            const widgetGrid = detailContainer.querySelector('.widget-grid');
+            if (widgetGrid) {
+                widgetGrid.style.display = '';
+            }
+            
+            // Remove iframe container completely
+            const iframeContainer = detailContainer.querySelector('#iframe-container');
+            if (iframeContainer) {
+                iframeContainer.remove();
+            }
+        }
 
-        // switch (this.currentView) {
-        //     case 'detail':
-        //         // Quay lại dashboard
-        //         window.dispatchEvent(new CustomEvent('navigateBack', {
-        //             detail: { from: 'detail', to: 'dashboard' }
-        //         }));
-        //         break;
+        // Hide components
+        if (window.app) {
+            if (window.app.mapFullscreen) {
+                window.app.mapFullscreen.hide();
+            }
+            if (window.app.dashboardGrid) {
+                window.app.dashboardGrid.hide();
+            }
+        }
 
-        //     case 'dashboard':
-        //         // Check if M0 screen is active - if yes, navigate to map
-        //         const hasM0 = document.querySelector('.screen-tile[data-stt="0"]');
-        //         if (hasM0) {
-        //             Config.log('info', 'M0 active - navigating to map view on back');
-        //             if (window.app && typeof window.app.lockMapView === 'function') {
-        //                 window.app.lockMapView();
-        //             }
-        //             window.app.router.navigate('/map');
-        //         } else {
-        //             // Normal back navigation
-        //             window.dispatchEvent(new CustomEvent('navigateBack', {
-        //                 detail: { from: 'dashboard', to: 'map' }
-        //             }));
-        //         }
-        //         break;
-
-        //     case 'map':
-        //         // Trên Tizen có thể thoát ứng dụng, còn lại quay về dashboard
-        //         if (Config.isTizen()) {
-        //             try {
-        //                 window.tizen.application.getCurrentApplication().exit();
-        //             } catch (e) {
-        //                 Config.log('error', 'Failed to exit app:', e);
-        //             }
-        //         } else {
-        //             window.dispatchEvent(new CustomEvent('navigateBack', {
-        //                 detail: { from: 'map', to: 'dashboard' }
-        //             }));
-        //         }
-        //         break;
-        // }
+        // Set display none sau khi remove class
+        setTimeout(() => {
+            if (mapContainer) {
+                mapContainer.style.display = 'none';
+            }
+            
+            if (dashboardContainer) {
+                dashboardContainer.style.display = 'none';
+            }
+            
+            if (detailContainer) {
+                detailContainer.style.display = 'none';
+            }
+        }, 10);
     }
 
     /**
