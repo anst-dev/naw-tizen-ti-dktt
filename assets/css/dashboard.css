@@ -6,11 +6,16 @@
 .dashboard-wrapper {
     width: 100%;
     height: 100vh;
-    padding: 0.5rem; /* Reduced padding to fit TV screen */
+    padding: var(--spacing-lg);
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
     overflow: hidden; /* Prevent any overflow */
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 18px 36px rgba(41, 61, 102, 0.1);
+    gap: var(--spacing-lg);
 }
 
 .dashboard-header {
@@ -19,13 +24,13 @@
     align-items: center;
     margin-bottom: var(--spacing-lg);
     padding-bottom: var(--spacing-md);
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 1px solid rgba(45, 75, 132, 0.2);
 }
 
 .dashboard-title {
     font-size: 2.5rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--accent-secondary);
 }
 
 .dashboard-info {
@@ -33,32 +38,42 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
     border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(45, 75, 132, 0.18);
+    color: var(--text-secondary);
+    box-shadow: 0 8px 18px rgba(41, 61, 102, 0.1);
 }
 
 .active-count {
     font-size: 2rem;
     font-weight: bold;
-    color: var(--accent-secondary);
+    color: var(--accent-primary);
 }
 
 .dashboard-info::after {
     content: "";
-    margin-left: var(--spacing-xs);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(58, 91, 160, 0.15);
 }
 
 /* Dashboard Grid */
 .dashboard-grid {
     flex: 1;
     display: grid;
-    gap: 0.5rem;
+    gap: var(--spacing-md);
     width: 100%;
     height: 100%;
     overflow: hidden; /* No scrolling - everything must fit */
-    padding: 0;
+    padding: var(--spacing-md);
     box-sizing: border-box;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: calc(var(--border-radius) - 4px);
+    box-shadow: 0 12px 28px rgba(41, 61, 102, 0.08);
 }
 
 /* Dynamic layouts based on active screens */
@@ -167,32 +182,34 @@
 /* Screen Tile */
 .screen-tile {
     background: var(--bg-secondary);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
+    border: 1px solid rgba(45, 75, 132, 0.18);
+    border-radius: calc(var(--border-radius) - 6px);
     display: flex;
     flex-direction: column;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
     position: relative;
     min-height: 0; /* Remove min-height to fit grid */
     height: 100%; /* Use full grid cell height */
     overflow: hidden; /* Prevent content overflow */
+    box-shadow: 0 10px 24px rgba(41, 61, 102, 0.08);
 }
 
 .screen-tile:hover {
     background: var(--bg-tertiary);
     border-color: var(--accent-primary);
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 14px 28px rgba(41, 61, 102, 0.16);
 }
 
 .screen-tile-header {
     padding: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(45, 75, 132, 0.12);
     display: flex;
     align-items: center;
     gap: 0.5rem;
     position: relative;
+    background: var(--bg-tertiary);
 }
 
 .screen-number {
@@ -202,10 +219,11 @@
     width: 35px;
     height: 35px;
     background: var(--accent-primary);
-    color: var(--text-primary);
+    color: #ffffff;
     border-radius: 50%;
     font-size: 0.9rem;
     font-weight: bold;
+    box-shadow: 0 3px 6px rgba(41, 61, 102, 0.18);
 }
 
 .screen-name {
@@ -214,7 +232,7 @@
     font-weight: 500;
     color: var(--text-primary);
     margin: 0;
-    white-space: nowrap;
+    white-space: wrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -226,11 +244,11 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: var(--text-dim);
+    background: rgba(45, 75, 132, 0.25);
 }
 
 .screen-status.active {
-    background: var(--accent-secondary);
+    background: var(--accent-primary);
     animation: pulse 2s infinite;
 }
 
@@ -316,8 +334,8 @@
 .screen-action-btn {
     padding: var(--spacing-xs) var(--spacing-md);
     background: var(--accent-primary);
-    color: var(--text-primary);
-    border: none;
+    color: #ffffff;
+    border: 1px solid transparent;
     border-radius: calc(var(--border-radius) / 2);
     font-size: 1rem;
     cursor: pointer;
@@ -325,7 +343,7 @@
 }
 
 .screen-action-btn:hover {
-    background: #357abd;
+    background: var(--accent-secondary);
     transform: translateX(4px);
 }
 
@@ -408,21 +426,22 @@
 
 /* M0 Map Screen Special Styling */
 .screen-tile.map-screen {
-    background: linear-gradient(135deg, #2a3f5f 0%, #1e2940 100%);
-    border: 2px solid var(--accent-primary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--accent-secondary);
+    box-shadow: 0 14px 30px rgba(41, 61, 102, 0.12);
 }
 
 .screen-tile.map-screen .screen-tile-header {
-    background: rgba(66, 153, 225, 0.1);
+    background: var(--bg-tertiary);
 }
 
 .screen-tile.map-screen .screen-number {
-    background: var(--accent-primary);
-    color: white;
+    background: var(--accent-secondary);
+    color: #ffffff;
 }
 
 .screen-tile.map-screen .screen-status {
-    color: #4ade80;
+    background: var(--accent-primary);
 }
 
 .map-icon-container {
@@ -438,6 +457,7 @@
     font-size: 5rem;
     margin-bottom: var(--spacing-md);
     animation: pulse 2s infinite;
+    color: var(--accent-secondary);
 }
 
 .map-description {
@@ -458,19 +478,19 @@
 }
 
 .screen-tile.map-screen:hover {
-    border-color: #4ade80;
-    transform: translateY(-4px);
+    border-color: var(--accent-secondary);
+    transform: translateY(-2px);
 }
 
 .screen-tile.map-screen:focus {
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+    box-shadow: 0 0 0 4px rgba(58, 91, 160, 0.3);
 }
 
 .screen-tile.map-screen .action-btn {
     background: var(--accent-primary);
-    color: white;
+    color: #ffffff;
     padding: var(--spacing-sm) var(--spacing-md);
-    border: none;
+    border: 1px solid transparent;
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -482,6 +502,6 @@
 }
 
 .screen-tile.map-screen .action-btn:hover {
-    background: #357abd;
+    background: var(--accent-secondary);
     transform: translateX(4px);
 }

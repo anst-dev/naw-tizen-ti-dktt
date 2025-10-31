@@ -8,22 +8,22 @@
     --tv-height: 2160px;
     
     /* Colors */
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #1a1a1a;
-    --bg-tertiary: #2a2a2a;
-    --bg-hover: #3a3a3a;
+    --bg-primary: #f5f7fb;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e9edf5;
+    --bg-hover: #dbe4f0;
     
-    --text-primary: #ffffff;
-    --text-secondary: #b0b0b0;
-    --text-dim: #707070;
+    --text-primary: #1f2937;
+    --text-secondary: #374151;
+    --text-dim: #6b7280;
     
-    --accent-primary: #4a90e2;
-    --accent-secondary: #50c878;
-    --accent-danger: #e74c3c;
-    --accent-warning: #f39c12;
+    --accent-primary: #3a5ba0;
+    --accent-secondary: #2d4b84;
+    --accent-danger: #243b63;
+    --accent-warning: #506da3;
     
-    --border-color: #3a3a3a;
-    --border-radius: 8px;
+    --border-color: #ccd6e5;
+    --border-radius: 16px;
     
     /* Spacing */
     --spacing-xs: 8px;
@@ -186,7 +186,7 @@ body {
 }
 
 .error-content button:hover {
-    background: #357abd;
+    background: var(--accent-secondary);
 }
 
 /* Map Fullscreen Styles */
@@ -204,7 +204,9 @@ body {
     left: 0;
     right: 0;
     padding: var(--spacing-md) var(--spacing-lg);
-    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+    background: rgba(245, 247, 251, 0.9);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 6px 12px rgba(41, 61, 102, 0.08);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -214,7 +216,8 @@ body {
 .map-title {
     font-size: 2.5rem;
     font-weight: 600;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    color: var(--text-primary);
+    text-shadow: none;
 }
 
 .map-status {
@@ -222,8 +225,10 @@ body {
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-xs) var(--spacing-md);
-    background: rgba(0,0,0,0.6);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
+    box-shadow: 0 4px 10px rgba(41, 61, 102, 0.08);
 }
 
 .status-indicator {
@@ -263,7 +268,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.8);
+    background: rgba(245, 248, 255, 0.88);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -279,12 +284,12 @@ body {
 .screen-tile:focus,
 .detail-widget:focus {
     transform: scale(1.02);
-    box-shadow: 0 0 30px rgba(74, 144, 226, 0.5);
+    box-shadow: 0 0 0 4px rgba(58, 91, 160, 0.25);
 }
 
 .focused {
     border-color: var(--accent-primary) !important;
-    box-shadow: 0 0 20px rgba(74, 144, 226, 0.3);
+    box-shadow: 0 0 0 4px rgba(58, 91, 160, 0.2);
 }
 
 /* Back Button */

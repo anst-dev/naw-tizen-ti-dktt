@@ -50,7 +50,7 @@
 @media (orientation: portrait) {
     .dashboard-grid {
         flex-direction: column;
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
     }
     
     .screen-tile {
