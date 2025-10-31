@@ -18,7 +18,6 @@ class Router {
      */
     register(path, handler) {
         this.routes.set(path, handler);
-        Config.log('debug', `Registered route: ${path}`);
     }
 
     /**
@@ -31,7 +30,6 @@ class Router {
         if (this.beforeRouteChange) {
             const canNavigate = this.beforeRouteChange(this.currentRoute, path, params);
             if (!canNavigate) {
-                Config.log('info', `Navigation to ${path} cancelled`);
                 return false;
             }
         }
@@ -39,7 +37,6 @@ class Router {
         // Get route handler
         const handler = this.routes.get(path);
         if (!handler) {
-            Config.log('error', `Route not found: ${path}`);
             return false;
         }
 
@@ -59,7 +56,6 @@ class Router {
             timestamp: Date.now()
         };
 
-        Config.log('info', `Navigating to: ${path}`, params);
 
         // Execute handler
         try {
@@ -80,7 +76,6 @@ class Router {
 
             return true;
         } catch (error) {
-            Config.log('error', `Error in route handler for ${path}:`, error);
             return false;
         }
     }
@@ -90,7 +85,6 @@ class Router {
      */
     back() {
         if (this.history.length === 0) {
-            Config.log('info', 'No history to go back');
             return false;
         }
 
@@ -135,7 +129,6 @@ class Router {
         this.routes.clear();
         this.currentRoute = null;
         this.history = [];
-        Config.log('info', 'Router cleared');
     }
 }
 

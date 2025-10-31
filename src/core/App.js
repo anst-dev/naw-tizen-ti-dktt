@@ -26,7 +26,6 @@ class App {
      */
     async init() {
         try {
-            Config.log('info', 'ðŸš€ Initializing Tizen Control Room Application');
 
             // Show loading
             this.showLoading();
@@ -47,10 +46,8 @@ class App {
             await this.start();
 
             this.isInitialized = true;
-            Config.log('info', 'âœ… Application initialized successfully');
 
         } catch (error) {
-            Config.log('error', 'âŒ Failed to initialize application:', error);
             this.showError('KhÃ´ng thá»ƒ khá»Ÿi Ä‘á»™ng á»©ng dá»¥ng. Vui lÃ²ng thá»­ láº¡i.');
         }
     }
@@ -59,7 +56,6 @@ class App {
      * Initialize services
      */
     async initServices() {
-        Config.log('info', 'Initializing services...');
 
         // API Service
         this.apiService = new ApiService();
@@ -96,7 +92,6 @@ class App {
                     if (content.includes('Opus') || content.includes('48gh') || content.includes('Claude')) {
                         mutation.target.innerHTML = '';
                         mutation.target.textContent = '';
-                        Config.log('warn', 'Cleared unwanted widget content:', content);
                     }
                 }
             });
@@ -117,12 +112,10 @@ class App {
 
     lockMapView() {
         this.isMapViewLocked = true;
-        Config.log('debug', 'Map view locked by user request');
     }
 
     unlockMapView() {
         if (this.isMapViewLocked) {
-            Config.log('debug', 'Map view lock cleared');
         }
         this.isMapViewLocked = false;
     }
@@ -131,7 +124,6 @@ class App {
      * Initialize components
      */
     async initComponents() {
-        Config.log('info', 'Initializing components...');
 
         // Map Fullscreen Component
         this.mapFullscreen = new MapFullscreen();
@@ -163,7 +155,6 @@ class App {
 
         // Set route change hooks
         this.router.setBeforeRouteChange((from, to, params) => {
-            Config.log('debug', `Route changing from ${from?.path} to ${to}`);
             return true;
         });
 
@@ -208,7 +199,6 @@ class App {
      * Start application
      */
     async start() {
-        Config.log('info', 'Starting application...');
 
         // Step 1: Show map fullscreen immediately
         this.router.navigate('/map');
@@ -239,11 +229,6 @@ class App {
      * Handle API update
      */
     handleAPIUpdate(screens) {
-        Config.log('info', `API Update: ${screens.length} active screens`);
-        console.log('ðŸ”„ === API UPDATE RECEIVED ===');
-        console.log('ðŸ“Š Screens count:', screens.length);
-        console.log('ðŸ“ Current view:', this.currentView);
-        console.log('ðŸŽ¯ Screens data:', screens);
 
         // Add M0 (map screen) to the beginning if there are active screens
         if (screens.length > 0) {
@@ -262,7 +247,6 @@ class App {
             const hasM0 = screens.some(s => s.STT === 0);
             if (!hasM0) {
                 screens.unshift(m0Screen); // Add M0 to the beginning
-                Config.log('info', 'Added M0 (map screen) to active screens');
             }
         }
 
@@ -271,18 +255,12 @@ class App {
 
         // Decision logic
         const shouldSwitchToDashboard = screens.length > 0 && this.currentView === 'map' && !this.isMapViewLocked;
-        console.log('â“ Should switch to dashboard?', shouldSwitchToDashboard);
-        console.log('   - Has screens?', screens.length > 0);
-        console.log('   - Is on map?', this.currentView === 'map');
-        console.log('   - Map locked?', this.isMapViewLocked);
 
         // Auto switch view based on screens
         if (shouldSwitchToDashboard) {
             // Have active screens, switch to dashboard
-            console.log('âœ… SWITCHING TO DASHBOARD VIEW...');
             this.unlockMapView();
             setTimeout(() => {
-                console.log('ðŸš€ Navigating to dashboard now!');
                 this.router.navigate('/dashboard', { screens });
             }, Config.LAYOUT.TRANSITION_DURATION);
         } else if (screens.length === 0 && this.currentView === 'dashboard') {
@@ -290,7 +268,6 @@ class App {
             this.router.navigate('/map');
         } else if (this.currentView === 'dashboard') {
             // Update dashboard with new screens
-            console.log('Updating dashboard with new screens...');
             this.dashboardGrid.render(screens);
         }
     }
@@ -300,7 +277,6 @@ class App {
      */
     handleViewChange(detail) {
         const { view } = detail;
-        Config.log('info', `View change requested: ${view}`);
 
         switch (view) {
             case 'map':
@@ -324,7 +300,6 @@ class App {
      * Handle open detail - Simplified version using Routes
      */
     handleOpenDetail(detail) {
-        Config.log('info', 'Opening screen detail:', detail);
 
         const providedScreen = detail?.screen;
         const sttValue = Number(detail?.stt ?? providedScreen?.STT);
@@ -343,7 +318,6 @@ class App {
             }
 
             if (!targetScreen) {
-                Config.log('warn', 'No screen data found for detail view');
                 return;
             }
 
@@ -359,7 +333,6 @@ class App {
      * Handle navigate back - Simplified version
      */
     handleNavigateBack(detail) {
-        Config.log('info', 'Navigate back:', detail);
 
         // Ưu tiên sử dụng Routes mới nếu đang trong detail view
         if (this.routes.getCurrentScreen()) {
@@ -401,12 +374,10 @@ class App {
                     try {
                         window.tizen.application.getCurrentApplication().exit();
                     } catch (e) {
-                        Config.log('error', 'Failed to exit app:', e);
                     }
                 }
                 break;
             case 'menu':
-                Config.log('info', 'Menu key pressed');
                 // Handle menu key if needed
                 break;
         }
@@ -441,21 +412,18 @@ class App {
         this.mapFullscreen.show();
         this.navigationManager.currentView = 'map';
         this.currentView = 'map';
-        Config.log('info', 'ðŸ“ Showing map view');
     }
 
     /**
      * Show dashboard view
      */
     showDashboardView(screens) {
-        console.log('showDashboardView called with screens:', screens);
         this.unlockMapView();
         
         // Don't redirect to map if M0 is with other screens
         // Only redirect if ONLY M0 exists and no other screens
         const nonM0Screens = screens ? screens.filter(s => s.STT !== 0) : [];
         if (screens && screens.length === 1 && screens[0].STT === 0 && nonM0Screens.length === 0) {
-            Config.log('info', 'Only M0 active - showing map view instead of dashboard');
             this.showMapView();
             return;
         }
@@ -477,8 +445,6 @@ class App {
         this.dashboardGrid.render(screens || []);
         this.navigationManager.currentView = 'dashboard';
         this.currentView = 'dashboard';
-        Config.log('info', 'ðŸ“Š Showing dashboard view');
-        console.log('Dashboard view should be visible now');
     }
 
     /**
@@ -489,7 +455,6 @@ class App {
      */
     showDetailView(params = {}) {
         const { screen = null, view = 'defaultDetail' } = params;
-        Config.log('info', 'Showing detail view:', params);
         this.unlockMapView();
 
         this.hideLoading();
@@ -498,7 +463,6 @@ class App {
 
         const detailContainer = document.getElementById('detail-container');
         if (!detailContainer) {
-            Config.log('error', 'Detail container not found');
             return;
         }
 
@@ -641,7 +605,6 @@ class App {
             customView.style.display = 'none';
         }
 
-        Config.log('debug', 'Rendering default detail view for screen:', screen);
     }
 
     /**
@@ -679,7 +642,6 @@ class App {
      * Destroy application
      */
     destroy() {
-        Config.log('info', 'Destroying application...');
 
         // Stop services
         this.apiService?.stopPolling();
@@ -698,7 +660,6 @@ class App {
 
         this.isInitialized = false;
         this.isMapViewLocked = false;
-        Config.log('info', 'Application destroyed');
     }
 }
 
@@ -719,4 +680,3 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
     window.App = App;
 }
-

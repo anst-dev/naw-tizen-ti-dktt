@@ -21,8 +21,6 @@ class ApiService {
         try {
             const url = `${this.baseUrl}${this.endpoints.GET_ACTIVE_DISPLAY}`;
 
-            Config.log('debug', 'Calling API:', url);
-            console.log('🔍 Calling API:', url);
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -39,16 +37,13 @@ class ApiService {
             }
 
             const data = await response.json();
-            console.log('📥 Raw API response:', data);
 
             // Kiểm tra format dữ liệu trả về
             if (!data || !data.result || !Array.isArray(data.result)) {
-                Config.log('warn', 'Invalid API response format:', data);
                 console.error('❌ Invalid API response format:', data);
                 return [];
             }
             
-            console.log('📋 Items from API:', data.result.length, 'items');
 
             // Lọc chỉ lấy các màn hình active
             const activeScreens = data.result
@@ -66,9 +61,6 @@ class ApiService {
                 }))
                 .sort((a, b) => a.STT - b.STT);
 
-            Config.log('info', `Found ${activeScreens.length} active screens`);
-            console.log('✅ Active screens found:', activeScreens.length);
-            console.log('📊 Screen details:', activeScreens);
 
             this.errorCount = 0; // Reset error count on success
             this.lastResponse = activeScreens;
@@ -76,12 +68,10 @@ class ApiService {
             return activeScreens;
 
         } catch (error) {
-            Config.log('error', 'API Error:', error);
             this.errorCount++;
 
             // Nếu lỗi quá nhiều lần, trả về response cuối cùng hoặc ar1ray rỗng
             if (this.errorCount > this.maxRetries) {
-                Config.log('warn', 'Max retries reached, returning last response or empty');
                 return this.lastResponse || [];
             }
 
@@ -102,12 +92,8 @@ class ApiService {
         // Clear existing polling if any
         this.stopPolling();
 
-        Config.log('info', `Starting API polling with interval: ${interval}ms`);
-        console.log('🚀 === STARTING API POLLING ===');
-        console.log('⏱️ Interval:', interval, 'ms');
 
         // Gọi lần đầu tiên ngay lập tức
-        console.log('📡 First poll starting now...');
         this.pollAPI();
 
         // Set interval cho các lần tiếp theo
@@ -123,7 +109,6 @@ class ApiService {
         if (this.pollingInterval) {
             clearInterval(this.pollingInterval);
             this.pollingInterval = null;
-            Config.log('info', 'API polling stopped');
         }
     }
 
@@ -131,21 +116,17 @@ class ApiService {
      * Poll API một lần
      */
     async pollAPI() {
-        console.log('⏰ Polling API at', new Date().toLocaleTimeString());
         try {
             const activeScreens = await this.getActiveDisplay();
-            console.log('📨 Poll result:', activeScreens.length, 'screens');
 
             // Notify all callbacks
             this.callbacks.forEach(callback => {
                 if (typeof callback === 'function') {
-                    console.log('🔔 Notifying callback with', activeScreens.length, 'screens');
                     callback(activeScreens);
                 }
             });
 
         } catch (error) {
-            Config.log('error', 'Polling error:', error);
         }
     }
 
@@ -156,7 +137,6 @@ class ApiService {
     onDataUpdate(callback) {
         if (typeof callback === 'function') {
             this.callbacks.push(callback);
-            Config.log('debug', 'Registered new data update callback');
         }
     }
 
@@ -168,7 +148,6 @@ class ApiService {
         const index = this.callbacks.indexOf(callback);
         if (index > -1) {
             this.callbacks.splice(index, 1);
-            Config.log('debug', 'Unregistered data update callback');
         }
     }
 
@@ -177,7 +156,6 @@ class ApiService {
      */
     clearCallbacks() {
         this.callbacks = [];
-        Config.log('debug', 'Cleared all callbacks');
     }
 
     /**
@@ -185,7 +163,6 @@ class ApiService {
      * @param {Array} mockData - Dữ liệu giả để test
      */
     testWithMockData(mockData) {
-        Config.log('info', 'Testing with mock data:', mockData);
 
         this.callbacks.forEach(callback => {
             if (typeof callback === 'function') {
@@ -218,7 +195,6 @@ class ApiService {
         this.clearCallbacks();
         this.lastResponse = null;
         this.errorCount = 0;
-        Config.log('info', 'ApiService reset complete');
     }
 }
 

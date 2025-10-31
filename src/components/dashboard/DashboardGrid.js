@@ -17,14 +17,12 @@ class DashboardGrid {
     init() {
         this.container = document.getElementById(this.containerId);
         if (!this.container) {
-            Config.log('error', `Container ${this.containerId} not found`);
             return false;
         }
 
         this.setupContainer();
         this.bindEvents();
-        
-        Config.log('info', 'DashboardGrid component initialized');
+
         return true;
     }
 
@@ -34,7 +32,7 @@ class DashboardGrid {
     setupContainer() {
         this.container.innerHTML = `
             <div class="dashboard-wrapper">
-                <div id="dashboard-grid" class="dashboard-grid"></div>
+                <div id="dashboard-grid" class="dashboard-grid">LOADDING</div>
             </div>
         `;
     }
@@ -58,11 +56,9 @@ class DashboardGrid {
         
         // Render grid
         this.renderGrid();
-        
+
         // Update info
         this.updateInfo();
-        
-        Config.log('info', `Rendered dashboard with ${this.screens.length} screens`);
     }
 
     /**
@@ -467,11 +463,8 @@ class DashboardGrid {
      * Handle screen click
      */
     handleScreenClick(screen) {
-        Config.log('info', `Screen ${screen.STT} clicked: ${screen.TenManHinh}`);
-        
         // M0 (screen 0) - navigate to map view
         if (screen.STT === 0) {
-            Config.log('info', 'M0 clicked - navigating to map view');
             if (window.app && window.app.router) {
                 if (typeof window.app.lockMapView === 'function') {
                     window.app.lockMapView();
@@ -568,7 +561,6 @@ class DashboardGrid {
         if (this.container) {
             this.container.style.display = 'block';
             this.container.classList.add('active');
-            Config.log('info', 'Dashboard shown');
         }
     }
 
@@ -581,7 +573,6 @@ class DashboardGrid {
             setTimeout(() => {
                 this.container.style.display = 'none';
             }, Config.LAYOUT.TRANSITION_DURATION);
-            Config.log('info', 'Dashboard hidden');
         }
     }
 
@@ -600,7 +591,6 @@ class DashboardGrid {
         if (this.container) {
             this.container.innerHTML = '';
         }
-        Config.log('info', 'DashboardGrid component destroyed');
     }
 }
 

@@ -147,7 +147,6 @@ class MapFullscreen {
             }, Config.LAYOUT.TRANSITION_DURATION);
         }
 
-        Config.log('info', 'Map fullscreen shown');
     }
 
     /**
@@ -162,7 +161,6 @@ class MapFullscreen {
         }, Config.LAYOUT.TRANSITION_DURATION);
         
         this.isVisible = false;
-        Config.log('info', 'Map fullscreen hidden');
     }
 
     /**

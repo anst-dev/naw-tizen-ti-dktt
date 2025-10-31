@@ -19,7 +19,7 @@ class Routes {
             5: { 
                 name: 'Chi tiết điểm chảy',
                 type: 'iframe', 
-                url: 'ChiTietDiemChay.html'
+                url: 'screens/ChiTietDiemChay.html'
             },
             6: { 
                 name: 'Lắp đặt mới',
@@ -56,7 +56,6 @@ class Routes {
         this.dashboardContainer = document.getElementById('dashboard-container');
         this.detailContainer = document.getElementById('detail-container');
         
-        Config.log('info', 'Routes system initialized');
     }
 
     /**
@@ -68,11 +67,9 @@ class Routes {
         const screen = this.SCREENS[stt];
         
         if (!screen) {
-            Config.log('warn', `Screen with STT ${stt} not found`);
             return false;
         }
 
-        Config.log('info', `Navigating to screen ${stt}: ${screen.name}`);
 
         // Clear all widget contents before navigating
         if (this.detailContainer) {
@@ -167,7 +164,6 @@ class Routes {
                 window.app.mapFullscreen.show();
             }
 
-            Config.log('info', 'Showing map fullscreen');
         }
     }
 
@@ -178,7 +174,6 @@ class Routes {
      */
     renderIframe(screen, options) {
         if (!this.detailContainer) {
-            Config.log('error', 'Detail container not found');
             return;
         }
 
@@ -236,7 +231,6 @@ class Routes {
             `;
         }
 
-        Config.log('info', `Showing detail screen: ${screen.name}`);
     }
 
     /**
@@ -284,7 +278,6 @@ class Routes {
                 window.app.dashboardGrid.render(screens);
             }
             
-            Config.log('info', 'Returned to dashboard');
         }, 50);
         
         // Reset màn hình hiện tại
@@ -389,7 +382,6 @@ class Routes {
     reset() {
         this.currentScreen = null;
         this.hideAllContainers();
-        Config.log('info', 'Routes system reset');
     }
 }
 

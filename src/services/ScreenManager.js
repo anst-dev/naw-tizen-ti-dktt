@@ -42,7 +42,6 @@ class ScreenManager {
             .filter(s => s.isActive)
             .sort((a, b) => a.STT - b.STT);
         
-        Config.log('info', `Updated active screens: ${this.activeScreens.length} screens`);
         
         // Trigger event để các component khác biết có thay đổi
         this.dispatchScreensUpdate();
