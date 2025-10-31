@@ -50,10 +50,10 @@ class DashboardGrid {
             // Then sort by STT
             return a.STT - b.STT;
         });
-        
+
         // Tính toán layout
         this.currentLayout = this.calculateLayout(this.screens.length);
-        
+
         // Render grid
         this.renderGrid();
 
@@ -264,17 +264,17 @@ class DashboardGrid {
     createScreenElement(screen, index) {
         const div = document.createElement('div');
         div.className = 'screen-tile';
-        
+
         // Add special class for M0 (map screen)
         if (screen.STT === 0) {
             div.className += ' map-screen';
         }
-        
+
         div.id = `screen-tile-${screen.STT}`;
         div.setAttribute('data-stt', screen.STT);
         div.setAttribute('data-index', index);
         div.setAttribute('tabindex', '0');
-        
+
         // Navigation attributes cho điều khiển
         this.setNavigationAttributes(div, index);
 
@@ -332,14 +332,30 @@ class DashboardGrid {
         // Calculate neighbors
         const up = row > 0 ? index - columns : -1;
         const down = row < rows - 1 && index + columns < this.screens.length ? index + columns : -1;
-        const left = col > 0 ? index - 1 : -1;
-        const right = col < columns - 1 && index + 1 < this.screens.length ? index + 1 : -1;
+        const left = col > 0
+            ? index - 1
+            : (row > 0 ? Math.min(row * columns - 1, this.screens.length - 1) : -1);
+        const right = index + 1 < this.screens.length ? index + 1 : -1;
+
+        const getNeighborStt = (neighborIndex) => {
+            if (neighborIndex < 0 || neighborIndex >= this.screens.length) {
+                return -1;
+            }
+            const neighborScreen = this.screens[neighborIndex];
+            return typeof neighborScreen !== 'undefined' && typeof neighborScreen.STT !== 'undefined'
+                ? neighborScreen.STT
+                : -1;
+        };
 
         // Set navigation data
         element.setAttribute('data-nav-up', up);
+        element.setAttribute('data-nav-up-stt', getNeighborStt(up));
         element.setAttribute('data-nav-down', down);
+        element.setAttribute('data-nav-down-stt', getNeighborStt(down));
         element.setAttribute('data-nav-left', left);
+        element.setAttribute('data-nav-left-stt', getNeighborStt(left));
         element.setAttribute('data-nav-right', right);
+        element.setAttribute('data-nav-right-stt', getNeighborStt(right));
         element.setAttribute('data-row', row);
         element.setAttribute('data-col', col);
     }
@@ -522,9 +538,9 @@ class DashboardGrid {
         const screens = this.container.querySelectorAll('.screen-tile');
         if (screens[index]) {
             screens[index].focus();
-            screens[index].scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
+            screens[index].scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
             });
         }
     }
@@ -536,9 +552,28 @@ class DashboardGrid {
         const currentElement = this.container.querySelectorAll('.screen-tile')[currentIndex];
         if (!currentElement) return;
 
-        const navIndex = currentElement.getAttribute(`data-nav-${direction}`);
+        const navAttr = `data-nav-${direction}`;
+        const navIndex = currentElement.getAttribute(navAttr);
+
         if (navIndex && navIndex !== '-1') {
-            this.focusScreen(parseInt(navIndex));
+            const targetIndex = parseInt(navIndex, 10);
+            const screens = this.container.querySelectorAll('.screen-tile');
+            if (screens[targetIndex]) {
+                this.focusScreen(targetIndex);
+                return;
+            }
+        }
+
+        const fallbackStt = currentElement.getAttribute(`${navAttr}-stt`);
+        if (fallbackStt && fallbackStt !== '-1') {
+            const fallbackElement = this.container.querySelector(`.screen-tile[data-stt="${fallbackStt}"]`);
+            if (fallbackElement) {
+                fallbackElement.focus();
+                fallbackElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
         }
     }
 

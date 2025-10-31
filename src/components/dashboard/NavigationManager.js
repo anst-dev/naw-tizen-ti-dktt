@@ -163,18 +163,26 @@ class NavigationManager {
             return;
         }
 
-        // Get navigation index
+        // Get navigation target attributes
         const navAttr = `data-nav-${direction}`;
         const targetIndex = currentElement.getAttribute(navAttr);
+        let targetElement = null;
 
         if (targetIndex && targetIndex !== '-1') {
-            const targetElement = document.querySelector(`.screen-tile[data-index="${targetIndex}"]`);
-            if (targetElement) {
-                this.moveFocus(targetElement);
+            targetElement = document.querySelector(`.screen-tile[data-index="${targetIndex}"]`);
+        }
+
+        if (!targetElement) {
+            const targetStt = currentElement.getAttribute(`${navAttr}-stt`);
+            if (targetStt && targetStt !== '-1') {
+                targetElement = document.querySelector(`.screen-tile[data-stt="${targetStt}"]`);
             }
         }
-    }
 
+        if (targetElement) {
+            this.moveFocus(targetElement);
+        }
+    }
     /**
      * Navigate trong detail view
      */
